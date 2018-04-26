@@ -24,22 +24,22 @@ class MemoryUnitSpec extends mutable.Specification {
 
   "A memory" >> {
     "when accessed as short" >> {
-      "return 0 if not initialized" >> {
+      "returns 0 if not initialized" >> {
         val memory = new TestMemory
         0x0000.asInstanceOf[Short] must_== memory.readShort(0x00)
       }
-      "return the value that was written into" >> {
+      "returns the value that was written into" >> {
         val memory = new TestMemory
         memory.writeShort(0x02, 0x0123.asInstanceOf[Short])
         0x0123.asInstanceOf[Short] must_== memory.readShort(0x02)
       }
-      "return the byte values combined" >> {
+      "returns the byte values combined" >> {
         val memory = new TestMemory
         memory.writeByte(0x02, 0x23.asInstanceOf[Byte])
         memory.writeByte(0x03, 0x45.asInstanceOf[Byte])
         0x4523.asInstanceOf[Short] must_== memory.readShort(0x02)
       }
-      "return the value as bytes" >> {
+      "returns the value as bytes" >> {
         val memory = new TestMemory
         memory.writeShort(0x02, 0x2345.asInstanceOf[Short])
         0x45.asInstanceOf[Byte] must_== memory.readByte(0x02)
@@ -55,16 +55,16 @@ class MemoryUnitSpec extends mutable.Specification {
       }
     }
     "when accessed as int" >> {
-      "return 0 if not initialized" >> {
+      "returns 0 if not initialized" >> {
         val memory = new TestMemory
         0x00000000 must_== memory.readInt(0x00)
       }
-      "return the value that was written into" >> {
+      "returns the value that was written into" >> {
         val memory = new TestMemory
         memory.writeInt(0x04, 0x01234567)
         0x01234567 must_== memory.readInt(0x04)
       }
-      "return the byte values combined" >> {
+      "returns the byte values combined" >> {
         val memory = new TestMemory
         memory.writeByte(0x04, 0x23.asInstanceOf[Byte])
         memory.writeByte(0x05, 0x45.asInstanceOf[Byte])
@@ -72,7 +72,7 @@ class MemoryUnitSpec extends mutable.Specification {
         memory.writeByte(0x07, 0x89.asInstanceOf[Byte])
         0x89674523 must_== memory.readInt(4)
       }
-      "return the value as bytes" >> {
+      "returns the value as bytes" >> {
         val memory = new TestMemory
         memory.writeInt(0x04, 0x23456789)
         0x89.asInstanceOf[Byte] must_== memory.readByte(0x04)
@@ -88,48 +88,48 @@ class MemoryUnitSpec extends mutable.Specification {
         val memory = new TestMemory
         memory.writeInt(0x03fe, 0x23456789) must throwA[IllegalAddressException]
       }
-      "when accessed as long" >> {
-        "return 0 if not initialized" >> {
-          val memory = new TestMemory
-          0L must_== memory.readLong(0x00)
-        }
-        "return the value that was written into" >> {
-          val memory = new TestMemory
-          memory.writeLong(0x08, 0x0123456789abcdefL)
-          0x0123456789abcdefL must_== memory.readLong(0x08)
-        }
-        "return the byte values combined" >> {
-          val memory = new TestMemory
-          memory.writeByte(0x08, 0x01.asInstanceOf[Byte])
-          memory.writeByte(0x09, 0x23.asInstanceOf[Byte])
-          memory.writeByte(0x0a, 0x45.asInstanceOf[Byte])
-          memory.writeByte(0x0b, 0x67.asInstanceOf[Byte])
-          memory.writeByte(0x0c, 0x89.asInstanceOf[Byte])
-          memory.writeByte(0x0d, 0xab.asInstanceOf[Byte])
-          memory.writeByte(0x0e, 0xcd.asInstanceOf[Byte])
-          memory.writeByte(0x0f, 0xef.asInstanceOf[Byte])
-          0xefcdab8967452301L must_== memory.readLong(0x08)
-        }
-        "return the value as bytes" >> {
-          val memory = new TestMemory
-          memory.writeLong(0x08, 0x0123456789abcdefL)
-          0xef.asInstanceOf[Byte] must_== memory.readByte(0x08)
-          0xcd.asInstanceOf[Byte] must_== memory.readByte(0x09)
-          0xab.asInstanceOf[Byte] must_== memory.readByte(0x0a)
-          0x89.asInstanceOf[Byte] must_== memory.readByte(0x0b)
-          0x67.asInstanceOf[Byte] must_== memory.readByte(0x0c)
-          0x45.asInstanceOf[Byte] must_== memory.readByte(0x0d)
-          0x23.asInstanceOf[Byte] must_== memory.readByte(0x0e)
-          0x01.asInstanceOf[Byte] must_== memory.readByte(0x0f)
-        }
-        "should throw an exception if reading partly out of scope" >> {
-          val memory = new TestMemory
-          memory.readLong(0x03fc) must throwA[IllegalAddressException]
-        }
-        "should throw an exception if writing partly out of scope" >> {
-          val memory = new TestMemory
-          memory.writeLong(0x03fc, 0x0123456789abcdefL) must throwA[IllegalAddressException]
-        }
+    }
+    "when accessed as long" >> {
+      "returns 0 if not initialized" >> {
+        val memory = new TestMemory
+        0L must_== memory.readLong(0x00)
+      }
+      "returns the value that was written into" >> {
+        val memory = new TestMemory
+        memory.writeLong(0x08, 0x0123456789abcdefL)
+        0x0123456789abcdefL must_== memory.readLong(0x08)
+      }
+      "returns the byte values combined" >> {
+        val memory = new TestMemory
+        memory.writeByte(0x08, 0x01.asInstanceOf[Byte])
+        memory.writeByte(0x09, 0x23.asInstanceOf[Byte])
+        memory.writeByte(0x0a, 0x45.asInstanceOf[Byte])
+        memory.writeByte(0x0b, 0x67.asInstanceOf[Byte])
+        memory.writeByte(0x0c, 0x89.asInstanceOf[Byte])
+        memory.writeByte(0x0d, 0xab.asInstanceOf[Byte])
+        memory.writeByte(0x0e, 0xcd.asInstanceOf[Byte])
+        memory.writeByte(0x0f, 0xef.asInstanceOf[Byte])
+        0xefcdab8967452301L must_== memory.readLong(0x08)
+      }
+      "returns the value as bytes" >> {
+        val memory = new TestMemory
+        memory.writeLong(0x08, 0x0123456789abcdefL)
+        0xef.asInstanceOf[Byte] must_== memory.readByte(0x08)
+        0xcd.asInstanceOf[Byte] must_== memory.readByte(0x09)
+        0xab.asInstanceOf[Byte] must_== memory.readByte(0x0a)
+        0x89.asInstanceOf[Byte] must_== memory.readByte(0x0b)
+        0x67.asInstanceOf[Byte] must_== memory.readByte(0x0c)
+        0x45.asInstanceOf[Byte] must_== memory.readByte(0x0d)
+        0x23.asInstanceOf[Byte] must_== memory.readByte(0x0e)
+        0x01.asInstanceOf[Byte] must_== memory.readByte(0x0f)
+      }
+      "should throw an exception if reading partly out of scope" >> {
+        val memory = new TestMemory
+        memory.readLong(0x03fc) must throwA[IllegalAddressException]
+      }
+      "should throw an exception if writing partly out of scope" >> {
+        val memory = new TestMemory
+        memory.writeLong(0x03fc, 0x0123456789abcdefL) must throwA[IllegalAddressException]
       }
     }
   }

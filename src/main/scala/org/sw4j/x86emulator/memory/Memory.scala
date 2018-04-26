@@ -8,11 +8,17 @@ trait Memory {
   /** Return the size of the memory. */
   def size: Long
 
-  /** Read a single byte from the memory at the given address. */
+  /**
+    * Read a single byte from the memory at the given address.
+    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    */
   @throws(classOf[IllegalAddressException])
   def readByte(address: Long): Byte
 
-  /** Write a single byte to the memory at the given address. */
+  /**
+    * Write a single byte to the memory at the given address.
+    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    */
   @throws(classOf[IllegalAddressException])
   def writeByte(address: Long, value: Byte): Unit
 
