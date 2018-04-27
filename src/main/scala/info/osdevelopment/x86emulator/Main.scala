@@ -1,7 +1,7 @@
-package org.sw4j.x86emulator
+package info.osdevelopment.x86emulator
 
+import info.osdevelopment.x86emulator.memory.SimpleReadWriteMemory
 import org.apache.commons.cli.{DefaultParser, Option, Options}
-import org.sw4j.x86emulator.memory.ReadWriteMemory
 
 object Main {
 
@@ -14,7 +14,7 @@ object Main {
 class Main {
 
   def compose = {
-    val mem = ReadWriteMemory(1024 * 1024)
+    val mem = SimpleReadWriteMemory(1024 * 1024)
 
     println(mem.size)
   }

@@ -1,4 +1,4 @@
-package org.sw4j.x86emulator.memory
+package info.osdevelopment.x86emulator.memory
 
 /**
   * A generic memory type. A memory type can address bytes up to a maximum of Long.MAX_VALUE bytes.

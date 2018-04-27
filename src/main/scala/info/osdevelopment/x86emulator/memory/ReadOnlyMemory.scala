@@ -1,4 +1,4 @@
-package org.sw4j.x86emulator.memory
+package info.osdevelopment.x86emulator.memory
 
 import java.nio.channels.SeekableByteChannel
 
