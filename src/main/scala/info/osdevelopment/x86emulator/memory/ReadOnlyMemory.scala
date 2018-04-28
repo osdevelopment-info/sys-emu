@@ -1,12 +1,15 @@
 package info.osdevelopment.x86emulator.memory
 
-import java.nio.ByteBuffer
 import java.nio.channels.SeekableByteChannel
 
 object ReadOnlyMemory {
 
   def apply(data: Array[Byte]): ReadOnlyMemory = {
     new ArrayReadOnlyMemory(data)
+  }
+
+  def apply(data: SeekableByteChannel): ReadOnlyMemory = {
+    new ChannelReadOnlyMemory(data)
   }
 
 }
