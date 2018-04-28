@@ -37,8 +37,8 @@ class CombinedReadWriteMemoryUnitSpec extends mutable.Specification {
       }
       "return the byte value that was written into another module" >> {
         val memory = CombinedReadWriteMemory()
-        memory.writeByte(0x0000000040000002L, 0xef.asInstanceOf[Byte])
-        0xef.asInstanceOf[Byte] must_== memory.readByte(0x0000000040000002L)
+        memory.writeByte(0x0000000040000002L, 0xdf.asInstanceOf[Byte])
+        0xdf.asInstanceOf[Byte] must_== memory.readByte(0x0000000040000002L)
       }
       "should throw an exception when the written address is negative" >> {
         val memory = CombinedReadWriteMemory()
