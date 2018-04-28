@@ -30,6 +30,8 @@ abstract class ReadOnlyMemory protected() extends Memory {
     *
     * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
     */
-  override final def writeByte(address: Long, value: Byte): Unit = {}
+  override final def writeByte(address: Long, value: Byte): Unit = {
+    if (address < 0 | address >= size) throw new IllegalAddressException
+  }
 
 }

@@ -30,6 +30,16 @@ class ReadOnlyMemoryUnitSpec extends mutable.Specification {
         memory.writeByte(0x0002, change)
         change must_!== memory.readByte(0x0002)
       }
+      "should throw an exception when the written address is negative" >> {
+        val data = new Array[Byte](1.Mi.asInstanceOf[Int])
+        val memory = ReadOnlyMemory(data)
+        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must throwA[IllegalAddressException]
+      }
+      "should throw an exception when the written address is too large" >> {
+        val data = new Array[Byte](1.Mi.asInstanceOf[Int])
+        val memory = ReadOnlyMemory(data)
+        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must throwA[IllegalAddressException]
+      }
       "should throw an exception when the read address is negative" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
         val memory = ReadOnlyMemory(data)
