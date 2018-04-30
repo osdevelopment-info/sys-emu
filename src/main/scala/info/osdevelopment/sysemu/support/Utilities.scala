@@ -1,4 +1,4 @@
-package info.osdevelopment.x86emulator.support
+package info.osdevelopment.sysemu.support
 
 object Utilities {
 

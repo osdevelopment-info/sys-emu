@@ -1,6 +1,6 @@
-package info.osdevelopment.x86emulator
+package info.osdevelopment.sysemu
 
-import info.osdevelopment.x86emulator.memory.SimpleReadWriteMemory
+import info.osdevelopment.sysemu.memory.SimpleReadWriteMemory
 import org.apache.commons.cli.{DefaultParser, Option, Options}
 
 object Main {

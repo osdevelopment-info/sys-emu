@@ -1,6 +1,6 @@
-package info.osdevelopment.x86emulator.memory
+package info.osdevelopment.sysemu.memory
 
-import info.osdevelopment.x86emulator.support.Utilities._
+import info.osdevelopment.sysemu.support.Utilities._
 import java.nio.ByteBuffer
 import java.nio.channels.SeekableByteChannel
 

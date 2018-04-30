@@ -1,4 +1,4 @@
-package info.osdevelopment.x86emulator.memory
+package info.osdevelopment.sysemu.memory
 
 import java.nio.channels.SeekableByteChannel
 

@@ -1,4 +1,4 @@
-name := "x86-emulator"
+name := "sys-emu"
 
 organization := "info.osdevelopment"
 

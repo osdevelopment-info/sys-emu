@@ -1,6 +1,6 @@
-package info.osdevelopment.x86emulator.memory
+package info.osdevelopment.sysemu.memory
 
-import info.osdevelopment.x86emulator.support.Utilities._
+import info.osdevelopment.sysemu.support.Utilities._
 
 /**
   * The object ReadWriteMemory used to create instances of the memory. The maximum memory that can be handled is 1 GiB.

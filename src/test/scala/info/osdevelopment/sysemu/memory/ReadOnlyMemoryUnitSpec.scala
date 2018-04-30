@@ -1,9 +1,9 @@
-package info.osdevelopment.x86emulator.memory
+package info.osdevelopment.sysemu.memory
 
 import java.nio.file.{FileSystems, Files, StandardOpenOption}
 import java.util.EnumSet
 
-import info.osdevelopment.x86emulator.support.Utilities._
+import info.osdevelopment.sysemu.support.Utilities._
 import org.specs2._
 
 import scala.util.Random

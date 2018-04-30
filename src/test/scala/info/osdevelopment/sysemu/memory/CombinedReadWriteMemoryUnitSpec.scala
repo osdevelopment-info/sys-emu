@@ -1,6 +1,6 @@
-package info.osdevelopment.x86emulator.memory
+package info.osdevelopment.sysemu.memory
 
-import info.osdevelopment.x86emulator.support.Utilities._
+import info.osdevelopment.sysemu.support.Utilities._
 import org.specs2._
 
 class CombinedReadWriteMemoryUnitSpec extends mutable.Specification {
