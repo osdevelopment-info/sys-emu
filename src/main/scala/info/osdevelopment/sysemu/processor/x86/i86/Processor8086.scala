@@ -14,17 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package info.osdevelopment.sysemu.processor.x86
+package info.osdevelopment.sysemu.processor.x86.i86
 
-import info.osdevelopment.sysemu.memory.Memory
-import info.osdevelopment.sysemu.processor.Processor
+import info.osdevelopment.sysemu.processor.x86.ProcessorX86
+import info.osdevelopment.sysemu.support.Utilities._
 
-class Processor8086 extends Processor {
+/**
+  * A concrete 8086 processor.
+  */
+class Processor8086 extends ProcessorX86 {
 
-  val memoryMap = collection.mutable.Map[Long, Memory]()
-
-  override def addMemory(baseAddress: Long, memory: Memory): Unit = {
-
-  }
+  /**
+    * The maximum memory that can be handled by the processor. The 8086 can handle at maximum 1 MiB of memory.
+    *
+    * @return the maximum memory that can be handled by the 8086.
+    */
+  override def maxMemory: Long = 1.Mi
 
 }

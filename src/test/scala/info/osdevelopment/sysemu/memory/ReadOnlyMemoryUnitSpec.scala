@@ -58,22 +58,22 @@ class ReadOnlyMemoryUnitSpec extends mutable.Specification {
       "should throw an exception when the written address is negative" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
         val memory = ReadOnlyMemory(data)
-        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must throwA[IllegalAddressException]
+        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
       }
       "should throw an exception when the written address is too large" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
         val memory = ReadOnlyMemory(data)
-        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must throwA[IllegalAddressException]
+        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
       }
       "should throw an exception when the read address is negative" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
         val memory = ReadOnlyMemory(data)
-        memory.readByte(-1) must throwA[IllegalAddressException]
+        memory.readByte(-1) must throwAn[IllegalAddressException]
       }
       "should throw an exception when the read address is too large" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
         val memory = ReadOnlyMemory(data)
-        memory.readByte(Int.MaxValue) must throwA[IllegalAddressException]
+        memory.readByte(Int.MaxValue) must throwAn[IllegalAddressException]
       }
     }
     "when initialized with a seekable byte channel" >> {
@@ -101,25 +101,25 @@ class ReadOnlyMemoryUnitSpec extends mutable.Specification {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
         val memory = ReadOnlyMemory(channel)
-        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must throwA[IllegalAddressException]
+        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
       }
       "should throw an exception when the written address is too large" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
         val memory = ReadOnlyMemory(channel)
-        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must throwA[IllegalAddressException]
+        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
       }
       "should throw an exception when the read address is negative" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
         val memory = ReadOnlyMemory(channel)
-        memory.readByte(-1) must throwA[IllegalAddressException]
+        memory.readByte(-1) must throwAn[IllegalAddressException]
       }
       "should throw an exception when the read address is too large" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
         val memory = ReadOnlyMemory(channel)
-        memory.readByte(Int.MaxValue) must throwA[IllegalAddressException]
+        memory.readByte(Int.MaxValue) must throwAn[IllegalAddressException]
       }
     }
   }
