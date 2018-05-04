@@ -25,6 +25,7 @@ import info.osdevelopment.sysemu.config.SystemConfig
 import info.osdevelopment.sysemu.system.System
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options}
+import scala.util.{Failure, Success, Try}
 
 object Main {
 
@@ -41,18 +42,17 @@ class Main {
   }
 
   def run(args: Array[String]): Unit = {
-    try {
-      create(createConfigFromCommandLine(args))
-    } catch {
-      case e: IllegalConfigurationException => {
-        println(e.getMessage)
+    val sysConfig = createConfigFromCommandLine(args)
+    sysConfig match {
+      case Success(config) => create(config)
+      case Failure(msg) =>
+        println(msg)
         sys.exit(-1)
-      }
     }
   }
 
   @throws[IllegalConfigurationException]
-  def createConfigFromCommandLine(args: Array[String]): SystemConfig = {
+  def createConfigFromCommandLine(args: Array[String]): Try[SystemConfig] = {
     val options = new Options()
     val biosOption = (Option builder("b") hasArg() longOpt("bios") optionalArg(true)
       desc("A file that contains a BIOS image") build())
@@ -71,7 +71,7 @@ class Main {
       commandLine getOptionValue("c") match {
         case "8086" => new Processor8086
         case _ => {
-          throw new IllegalConfigurationException("Invalid CPU")
+          return Failure(new IllegalConfigurationException("Invalid CPU"))
         }
       }
     } else {
@@ -85,7 +85,7 @@ class Main {
       readDefaultBios(cpu)
     }
     if (bios.isEmpty) {
-      throw new IllegalConfigurationException("BIOS file does not exist")
+      return Failure(new IllegalConfigurationException("BIOS file does not exist"))
     }
     val biosSize = bios.get.size
     val biosStart = if (cpu.maxMemory < 4.Gi) {
@@ -94,6 +94,7 @@ class Main {
       4.Gi - biosSize
     }
     systemConfig.addMemory(biosStart, bios.get)
+    Success(systemConfig)
   }
 
   private def readExternalBios(fileName: String): scala.Option[Memory] = {
