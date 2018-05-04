@@ -16,41 +16,110 @@
  */
 package info.osdevelopment.sysemu
 
-import info.osdevelopment.sysemu.memory.SimpleReadWriteMemory
-import org.apache.commons.cli.{DefaultParser, Option, Options}
+
+import info.osdevelopment.sysemu.memory.{Memory, ReadOnlyMemory}
+import info.osdevelopment.sysemu.processor.Processor
+import info.osdevelopment.sysemu.processor.x86.i86.Processor8086
+import info.osdevelopment.sysemu.support.Utilities._
+import info.osdevelopment.sysemu.config.SystemConfig
+import info.osdevelopment.sysemu.system.System
+import java.nio.file.{Files, Paths, StandardOpenOption}
+import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options}
 
 object Main {
 
   def main(args: Array[String]): Unit = {
-    new Main run(args)
+    new Main run (args)
   }
 
 }
 
 class Main {
 
-  def compose = {
-    val mem = SimpleReadWriteMemory(1024 * 1024)
-
-    println(mem.size)
+  def create(config: SystemConfig): System = {
+    null
   }
 
   def run(args: Array[String]): Unit = {
+    try {
+      create(createConfigFromCommandLine(args))
+    } catch {
+      case e: IllegalConfigurationException => {
+        println(e.getMessage)
+        sys.exit(-1)
+      }
+    }
+  }
+
+  @throws[IllegalConfigurationException]
+  def createConfigFromCommandLine(args: Array[String]): SystemConfig = {
     val options = new Options()
-    val cpu = Option builder("c") hasArg() longOpt("cpu") optionalArg(true) build()
-    options addOption(cpu)
+    val biosOption = (Option builder("b") hasArg() longOpt("bios") optionalArg(true)
+      desc("A file that contains a BIOS image") build())
+    options.addOption(biosOption)
+
+    val cpuOption = (Option builder("c") hasArg() longOpt("cpu") optionalArg(true)
+      desc("The CPU to emulate") build())
+    options addOption(cpuOption)
+
     val parser = new DefaultParser
     val commandLine = parser parse(options, args)
 
-    print("CPU: ")
-    if (commandLine hasOption("c")) {
-      println(commandLine getOptionValue("c"))
+    val systemConfig = new SystemConfig
+
+    val cpu = if (commandLine hasOption("c")) {
+      commandLine getOptionValue("c") match {
+        case "8086" => new Processor8086
+        case _ => {
+          throw new IllegalConfigurationException("Invalid CPU")
+        }
+      }
     } else {
-      println("default")
+      new Processor8086
     }
+    systemConfig.addProcessor(cpu)
 
-    compose
+    val bios = if (commandLine hasOption("b")) {
+      readExternalBios(commandLine getOptionValue ("b"))
+    } else {
+      readDefaultBios(cpu)
+    }
+    if (bios.isEmpty) {
+      throw new IllegalConfigurationException("BIOS file does not exist")
+    }
+    val biosSize = bios.get.size
+    val biosStart = if (cpu.maxMemory < 4.Gi) {
+      cpu.maxMemory - biosSize
+    } else {
+      4.Gi - biosSize
+    }
+    systemConfig.addMemory(biosStart, bios.get)
+  }
 
+  private def readExternalBios(fileName: String): scala.Option[Memory] = {
+    val biosFile = Paths.get(fileName)
+    if (!Files.exists(biosFile)) {
+      None
+    } else {
+      Some(ReadOnlyMemory(Files.newByteChannel(biosFile, StandardOpenOption.READ)))
+    }
+  }
+
+  private def readDefaultBios(processor: Processor): scala.Option[Memory] = {
+    processor match {
+      case p: Processor8086 => {
+        val is = getClass.getResourceAsStream("bios86")
+        val rom = new Array[Byte](is.available())
+        is.read(rom)
+        Some(ReadOnlyMemory(rom))
+      }
+      case _ => {
+        val is = getClass.getResourceAsStream("bios86")
+        val rom = new Array[Byte](is.available())
+        is.read(rom)
+        Some(ReadOnlyMemory(rom))
+      }
+    }
   }
 
 }

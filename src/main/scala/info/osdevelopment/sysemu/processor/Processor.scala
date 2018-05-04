@@ -20,6 +20,31 @@ import info.osdevelopment.sysemu.memory.Memory
 
 trait Processor {
 
-  def addMemory(baseAddress: Long, memory: Memory)
+  val memoryMap = collection.mutable.Map[Long, Memory]()
+
+  /**
+    * Adds a memory area to this processor. The memory has a base address (the lowest address handled by this
+    * processor).
+    * @param baseAddress
+    * @param memory
+    */
+  def addMemory(baseAddress: Long, memory: Memory): Unit = {
+    memoryMap.foreach(address => {
+      val startAddress = address._1
+      val endAddress = startAddress + address._2.size
+      if (baseAddress >= startAddress & baseAddress < endAddress)
+        throw new IllegalMemoryLayoutException("Memory overlaps")
+      if (baseAddress + memory.size >= startAddress & baseAddress + memory.size < endAddress)
+        throw new IllegalMemoryLayoutException("Memory overlaps")
+    })
+    if (baseAddress + memory.size > maxMemory) throw new IllegalMemoryLayoutException("Memory exceeds max memory")
+    memoryMap += baseAddress -> memory
+  }
+
+  /**
+    * The maximum memory that can be handled by the processor
+    * @return
+    */
+  def maxMemory: Long
 
 }

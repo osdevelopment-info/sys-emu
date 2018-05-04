@@ -1,5 +1,7 @@
 package info.osdevelopment.sysemu.system
 
-class System {
+import info.osdevelopment.sysemu.config.SystemConfig
+
+class System (val config: SystemConfig) {
 
 }

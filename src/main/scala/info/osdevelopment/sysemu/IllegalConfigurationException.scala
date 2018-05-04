@@ -1,5 +1,5 @@
 package info.osdevelopment.sysemu
 
-class IllegalConfigurationException {
+class IllegalConfigurationException (val msg: String) extends Exception(msg) {
 
 }

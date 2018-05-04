@@ -81,7 +81,7 @@ class ReadOnlyMemoryUnitSpec extends mutable.Specification {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "smallrom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
         val memory = ReadOnlyMemory(channel)
-        0x15.asInstanceOf[Byte] must_== memory.readByte(0x0001)
+        0xce.asInstanceOf[Byte] must_== memory.readByte(0x0001)
       }
       "should ignore writing a byte" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "smallrom.img")
