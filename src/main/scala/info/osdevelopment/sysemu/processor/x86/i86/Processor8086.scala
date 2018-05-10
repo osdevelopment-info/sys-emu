@@ -24,11 +24,23 @@ import info.osdevelopment.sysemu.support.Utilities._
   */
 class Processor8086 extends ProcessorX86 {
 
+  private var cs: Short = 0xffff.asInstanceOf[Short]
+
+  private var ip: Short = 0x0000.asInstanceOf[Short]
+
   /**
     * The maximum memory that can be handled by the processor. The 8086 can handle at maximum 1 MiB of memory.
     *
     * @return the maximum memory that can be handled by the 8086.
     */
   override def maxMemory: Long = 1.Mi
+
+  override def reset = {
+    cs = 0xffff.asInstanceOf[Short]
+    ip = 0x0000.asInstanceOf[Short]
+  }
+
+  override def step: Unit = {
+  }
 
 }

@@ -47,4 +47,8 @@ trait Processor {
     */
   def maxMemory: Long
 
+  def reset: Unit
+
+  def step: Unit
+
 }

@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package info.osdevelopment.sysemu.config
+package info.osdevelopment.sysemu.system
 
 import info.osdevelopment.sysemu.memory.Memory
 import info.osdevelopment.sysemu.processor.{IllegalMemoryLayoutException, Processor}
-
 import scala.collection.LinearSeq
 
 class SystemConfig {

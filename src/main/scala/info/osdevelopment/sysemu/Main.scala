@@ -17,12 +17,18 @@
 package info.osdevelopment.sysemu
 
 
+import akka.actor.{ActorSystem, Props}
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.Directives._
+import info.osdevelopment.sysemu.config.Configuration
 import info.osdevelopment.sysemu.memory.{Memory, ReadOnlyMemory}
 import info.osdevelopment.sysemu.processor.Processor
 import info.osdevelopment.sysemu.processor.x86.i86.Processor8086
+import info.osdevelopment.sysemu.remote.rest.RestDebugService
 import info.osdevelopment.sysemu.support.Utilities._
-import info.osdevelopment.sysemu.config.SystemConfig
-import info.osdevelopment.sysemu.system.System
+import info.osdevelopment.sysemu.system.{System, SystemConfig}
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options}
 import scala.util.{Failure, Success, Try}
@@ -35,20 +41,26 @@ object Main {
 
 }
 
-class Main {
+class Main extends Configuration {
 
   def create(config: SystemConfig): System = {
     null
   }
 
   def run(args: Array[String]): Unit = {
-    val sysConfig = createConfigFromCommandLine(args)
+    val actorSystem = ActorSystem("emu-system", config)
+    val system = new System
+    val httpRouter = actorSystem.actorOf(Props(classOf[RestDebugService], actorSystem, this),
+      "restDebugService")
+    httpRouter ! "start"
+
+    /*val sysConfig = createConfigFromCommandLine(args)
     sysConfig match {
-      case Success(config) => create(config)
+      case Success(c) => create(c)
       case Failure(msg) =>
         println(msg)
         sys.exit(-1)
-    }
+    }*/
   }
 
   @throws[IllegalConfigurationException]
