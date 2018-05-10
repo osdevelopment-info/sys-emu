@@ -16,9 +16,9 @@ object ReadWriteMemory {
       throw new IllegalArgumentException("Max size supported is 1 EiB")
     }
     if (size > 1.Gi) {
-      return CombinedReadWriteMemory(size)
+      CombinedReadWriteMemory(size)
     } else {
-      return SimpleReadWriteMemory(size)
+      SimpleReadWriteMemory(size)
     }
   }
 

@@ -36,7 +36,7 @@ import scala.util.{Failure, Success, Try}
 object Main {
 
   def main(args: Array[String]): Unit = {
-    new Main run (args)
+    new Main run args
   }
 
 }
@@ -82,9 +82,8 @@ class Main extends Configuration {
     val cpu = if (commandLine hasOption("c")) {
       commandLine getOptionValue("c") match {
         case "8086" => new Processor8086
-        case _ => {
+        case _ =>
           return Failure(new IllegalConfigurationException("Invalid CPU"))
-        }
       }
     } else {
       new Processor8086
@@ -120,18 +119,16 @@ class Main extends Configuration {
 
   private def readDefaultBios(processor: Processor): scala.Option[Memory] = {
     processor match {
-      case p: Processor8086 => {
+      case p: Processor8086 =>
         val is = getClass.getResourceAsStream("bios86")
         val rom = new Array[Byte](is.available())
         is.read(rom)
         Some(ReadOnlyMemory(rom))
-      }
-      case _ => {
+      case _ =>
         val is = getClass.getResourceAsStream("bios86")
         val rom = new Array[Byte](is.available())
         is.read(rom)
         Some(ReadOnlyMemory(rom))
-      }
     }
   }
 

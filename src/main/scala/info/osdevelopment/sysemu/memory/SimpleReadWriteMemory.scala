@@ -30,7 +30,7 @@ object SimpleReadWriteMemory {
     if (size > 1.Gi) {
       throw new IllegalArgumentException("Max size supported is 1 GiB")
     }
-    return new SimpleReadWriteMemory(size)
+    new SimpleReadWriteMemory(size)
   }
 
 }

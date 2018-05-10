@@ -39,8 +39,8 @@ object CombinedReadWriteMemory {
 class CombinedReadWriteMemory private(val size: Long) extends ReadWriteMemory {
 
   val remaining = size % 1.Gi
-  val numberModules = (if (remaining == 0) size / (1.Gi) else size / (1.Gi) + 1).asInstanceOf[Int]
-  val modules = Array.fill(numberModules){ SimpleReadWriteMemory((1.Gi).asInstanceOf[Int]) }
+  val numberModules = (if (remaining == 0) size / 1.Gi else size / 1.Gi + 1).asInstanceOf[Int]
+  val modules = Array.fill(numberModules){ SimpleReadWriteMemory(1.Gi.asInstanceOf[Int]) }
 
   /**
     * Read a single byte from the memory at the given address.
@@ -48,8 +48,8 @@ class CombinedReadWriteMemory private(val size: Long) extends ReadWriteMemory {
     * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
     */
   protected override def doRead(address: Long): Byte = {
-    val module = address / (1.Gi)
-    val offset = address % (1.Gi)
+    val module = address / 1.Gi
+    val offset = address % 1.Gi
     modules(module.asInstanceOf[Int]).readByte(offset)
   }
 
@@ -59,8 +59,8 @@ class CombinedReadWriteMemory private(val size: Long) extends ReadWriteMemory {
     * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
     */
   protected override def doWrite(address: Long, value: Byte): Unit = {
-    val module = address / (1.Gi)
-    val offset = address % (1.Gi)
+    val module = address / 1.Gi
+    val offset = address % 1.Gi
     modules(module.asInstanceOf[Int]).writeByte(offset.asInstanceOf[Int], value)
   }
 
