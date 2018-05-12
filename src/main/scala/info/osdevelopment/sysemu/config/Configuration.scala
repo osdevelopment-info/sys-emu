@@ -19,6 +19,9 @@ package info.osdevelopment.sysemu.config
 import com.typesafe.config.ConfigFactory
 import scala.util.Try
 
+/**
+  * The global configuration of the application, read from `application.conf`.
+  */
 trait Configuration {
 
   val config = ConfigFactory.load
