@@ -5,8 +5,9 @@ pipeline {
         stage('Init') {
             steps {
                 script {
+                    def javaHome = tool 'Current JDK 8'
                     def sbtHome = tool 'sbt-latest'
-                    env.sbt= "${sbtHome}/bin/sbt -no-colors -batch"
+                    env.sbt= "${javaHome} -Xmx4G -jar ${sbtHome} -no-colors -batch"
                 }
             }
         }
