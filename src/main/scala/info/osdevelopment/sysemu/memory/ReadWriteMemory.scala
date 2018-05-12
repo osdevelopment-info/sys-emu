@@ -18,50 +18,52 @@ package info.osdevelopment.sysemu.memory
 
 import info.osdevelopment.sysemu.support.Utilities._
 
-object CombinedReadWriteMemory {
+object ReadWriteMemory {
 
-  def apply(size: Long): CombinedReadWriteMemory = {
+  def apply(): ReadWriteMemory = {
+    apply(1.Gi)
+  }
+
+  def apply(size: Long): ReadWriteMemory = {
     if (size <= 0) {
       throw new IllegalArgumentException("Size must be greater than 0")
     }
     if (size > 1.Ei) {
       throw new IllegalArgumentException("Max size supported is 1 EiB")
     }
-    new CombinedReadWriteMemory(size)
+    if (size > 1.Gi) {
+      CombinedReadWriteMemory(size)
+    } else {
+      SimpleReadWriteMemory(size)
+    }
   }
 
 }
 
-/**
-  * A read-write memory that can hold up to 2^60^ Bytes (1 EiB). Please note that the size is immediately allocated.
-  * @param size
-  */
-class CombinedReadWriteMemory private(val size: Long) extends ReadWriteMemory {
-
-  val remaining = size % 1.Gi
-  val numberModules = (if (remaining == 0) size / 1.Gi else size / 1.Gi + 1).asInstanceOf[Int]
-  val modules = Array.fill(numberModules){ SimpleReadWriteMemory(1.Gi.asInstanceOf[Int]) }
+abstract class ReadWriteMemory protected() extends Memory {
 
   /**
     * Read a single byte from the memory at the given address.
     *
     * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
     */
-  protected override def doRead(address: Long): Byte = {
-    val module = address / 1.Gi
-    val offset = address % 1.Gi
-    modules(module.asInstanceOf[Int]).readByte(offset)
+  override final def readByte(address: Long): Byte = {
+    if (address < 0 | address >= size) throw new IllegalAddressException("Address outside memory")
+    doRead(address)
   }
+
+  protected def doRead(address: Long): Byte
 
   /**
     * Write a single byte to the memory at the given address.
     *
     * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
     */
-  protected override def doWrite(address: Long, value: Byte): Unit = {
-    val module = address / 1.Gi
-    val offset = address % 1.Gi
-    modules(module.asInstanceOf[Int]).writeByte(offset.asInstanceOf[Int], value)
+  override final def writeByte(address: Long, value: Byte): Unit = {
+    if (address < 0 | address >= size) throw new IllegalAddressException("Address outside memory")
+    doWrite(address, value)
   }
+
+  protected def doWrite(address: Long, value: Byte)
 
 }

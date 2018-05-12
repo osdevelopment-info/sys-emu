@@ -14,25 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package info.osdevelopment.sysemu.memory
+package info.osdevelopment.sysemu.processor.x86
 
-import info.osdevelopment.sysemu.support.Utilities._
-import org.specs2._
+import info.osdevelopment.sysemu.processor.Processor
 
-class CombinedReadWriteMemoryUnitSpec extends mutable.Specification {
-
-  /** This specification needs to be sequential because else we will get an OOME */
-  sequential
-
-  "A CombinedReadWriteMemory" >> {
-    "when created" >> {
-      "should throw an IllegalArgumentException when size is to large" >> {
-        CombinedReadWriteMemory(2.Ei) must throwAn[IllegalArgumentException]
-      }
-      "should throw an IllegalArgumentException when size is negative" >> {
-        CombinedReadWriteMemory(-2.Gi) must throwAn[IllegalArgumentException]
-      }
-    }
-  }
+/**
+  * An abstract processor defining the x86 processor family.
+  */
+abstract class ProcessorX86 extends Processor {
 
 }

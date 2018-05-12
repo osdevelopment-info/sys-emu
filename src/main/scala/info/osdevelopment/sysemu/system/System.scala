@@ -14,25 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package info.osdevelopment.sysemu.memory
+package info.osdevelopment.sysemu.system
 
-import info.osdevelopment.sysemu.support.Utilities._
-import org.specs2._
+import java.util.UUID
+import org.slf4j.LoggerFactory
 
-class CombinedReadWriteMemoryUnitSpec extends mutable.Specification {
+class System(var uuid: Option[UUID]) {
 
-  /** This specification needs to be sequential because else we will get an OOME */
-  sequential
+  def this() = {
+    this(None)
+  }
 
-  "A CombinedReadWriteMemory" >> {
-    "when created" >> {
-      "should throw an IllegalArgumentException when size is to large" >> {
-        CombinedReadWriteMemory(2.Ei) must throwAn[IllegalArgumentException]
-      }
-      "should throw an IllegalArgumentException when size is negative" >> {
-        CombinedReadWriteMemory(-2.Gi) must throwAn[IllegalArgumentException]
-      }
-    }
+  val log = LoggerFactory getLogger classOf[System]
+
+  def step: Unit = {
+    log.info("System step")
+  }
+
+  def run: Unit = {
+    log.info("System run")
   }
 
 }

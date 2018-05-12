@@ -27,12 +27,12 @@ class MemoryUnitSpec extends mutable.Specification {
     override def size: Long = memory length
 
     override def readByte(address: Long): Byte = {
-      if (address >= memory.length) throw new IllegalAddressException
+      if (address >= memory.length) throw new IllegalAddressException("Address outside memory")
       memory(address.asInstanceOf[Int])
     }
 
     override def writeByte(address: Long, value: Byte): Unit = {
-      if (address >= memory.length) throw new IllegalAddressException
+      if (address >= memory.length) throw new IllegalAddressException("Address outside memory")
       memory(address.asInstanceOf[Int]) = value
     }
 
@@ -63,11 +63,11 @@ class MemoryUnitSpec extends mutable.Specification {
       }
       "should throw an exception if reading partly out of scope" >> {
         val memory = new TestMemory
-        memory.readShort(0x03ff) must throwA[IllegalAddressException]
+        memory.readShort(0x03ff) must throwAn[IllegalAddressException]
       }
       "should throw an exception if writing partly out of scope" >> {
         val memory = new TestMemory
-        memory.writeShort(0x03ff, 0x2345.asInstanceOf[Short]) must throwA[IllegalAddressException]
+        memory.writeShort(0x03ff, 0x2345.asInstanceOf[Short]) must throwAn[IllegalAddressException]
       }
     }
     "when accessed as int" >> {
@@ -98,11 +98,11 @@ class MemoryUnitSpec extends mutable.Specification {
       }
       "should throw an exception if reading partly out of scope" >> {
         val memory = new TestMemory
-        memory.readInt(0x03fe) must throwA[IllegalAddressException]
+        memory.readInt(0x03fe) must throwAn[IllegalAddressException]
       }
       "should throw an exception if writing partly out of scope" >> {
         val memory = new TestMemory
-        memory.writeInt(0x03fe, 0x23456789) must throwA[IllegalAddressException]
+        memory.writeInt(0x03fe, 0x23456789) must throwAn[IllegalAddressException]
       }
     }
     "when accessed as long" >> {
@@ -141,11 +141,11 @@ class MemoryUnitSpec extends mutable.Specification {
       }
       "should throw an exception if reading partly out of scope" >> {
         val memory = new TestMemory
-        memory.readLong(0x03fc) must throwA[IllegalAddressException]
+        memory.readLong(0x03fc) must throwAn[IllegalAddressException]
       }
       "should throw an exception if writing partly out of scope" >> {
         val memory = new TestMemory
-        memory.writeLong(0x03fc, 0x0123456789abcdefL) must throwA[IllegalAddressException]
+        memory.writeLong(0x03fc, 0x0123456789abcdefL) must throwAn[IllegalAddressException]
       }
     }
   }

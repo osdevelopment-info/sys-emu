@@ -23,12 +23,14 @@ import info.osdevelopment.sysemu.support.Utilities._
   */
 object SimpleReadWriteMemory {
 
-  def apply(): SimpleReadWriteMemory = {
-    return new SimpleReadWriteMemory(8.Mi)
-  }
-
-  def apply(size: Int): SimpleReadWriteMemory = {
-    return new SimpleReadWriteMemory(size)
+  def apply(size: Long): SimpleReadWriteMemory = {
+    if (size <= 0) {
+      throw new IllegalArgumentException("Size must be greater than 0")
+    }
+    if (size > 1.Gi) {
+      throw new IllegalArgumentException("Max size supported is 1 GiB")
+    }
+    new SimpleReadWriteMemory(size)
   }
 
 }
@@ -37,25 +39,17 @@ object SimpleReadWriteMemory {
   * A read-write memory (aka RAM) with a default size of 8MiB. The maximum size is 2^30^ Bytes (1 GiB).
   * @param size the size of the memory
   */
-class SimpleReadWriteMemory private(val size: Long) extends Memory {
+class SimpleReadWriteMemory private(val size: Long) extends ReadWriteMemory {
 
-  if (size <= 0) {
-    throw new IllegalArgumentException("Size must be greater than 0")
-  }
-  if (size > 1.Gi) {
-    throw new IllegalArgumentException("Max size supported is 1 GiB")
-  }
   val memory = new Array[Byte](size.asInstanceOf[Int])
 
   @throws(classOf[IllegalAddressException])
-  override def readByte(address: Long): Byte = {
-    if (address >= size | address < 0) throw new IllegalAddressException
+  protected override def doRead(address: Long): Byte = {
     memory(address.asInstanceOf[Int])
   }
 
   @throws(classOf[IllegalAddressException])
-  override def writeByte(address: Long, value: Byte): Unit = {
-    if (address >= size | address < 0) throw new IllegalAddressException
+  protected override def doWrite(address: Long, value: Byte): Unit = {
     memory(address.asInstanceOf[Int]) = value
   }
 

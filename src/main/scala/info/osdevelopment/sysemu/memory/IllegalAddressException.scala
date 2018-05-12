@@ -16,6 +16,6 @@
  */
 package info.osdevelopment.sysemu.memory
 
-class IllegalAddressException extends Exception {
+class IllegalAddressException (val msg: String) extends Exception(msg) {
 
 }

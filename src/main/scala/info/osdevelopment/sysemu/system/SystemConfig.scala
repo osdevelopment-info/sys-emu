@@ -14,21 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package info.osdevelopment.sysemu.processor
+package info.osdevelopment.sysemu.system
 
 import info.osdevelopment.sysemu.memory.Memory
+import info.osdevelopment.sysemu.processor.{IllegalMemoryLayoutException, Processor}
+import scala.collection.LinearSeq
 
-trait Processor {
+class SystemConfig {
 
-  val memoryMap = collection.mutable.Map[Long, Memory]()
+  private val _processors = collection.mutable.ListBuffer[Processor]()
 
-  /**
-    * Adds a memory area to this processor. The memory has a base address (the lowest address handled by this
-    * processor).
-    * @param baseAddress
-    * @param memory
-    */
-  def addMemory(baseAddress: Long, memory: Memory): Unit = {
+  def addProcessor(processor: Processor): SystemConfig = {
+    _processors += processor
+    this
+  }
+
+  def processors: LinearSeq[Processor] = {
+    _processors.toList
+  }
+
+  private val memoryMap = collection.mutable.Map[Long, Memory]()
+
+  @throws[IllegalMemoryLayoutException]
+  def addMemory(baseAddress: Long, memory: Memory): SystemConfig = {
     memoryMap.foreach(address => {
       val startAddress = address._1
       val endAddress = startAddress + address._2.size
@@ -37,18 +45,12 @@ trait Processor {
       if (baseAddress + memory.size >= startAddress & baseAddress + memory.size < endAddress)
         throw new IllegalMemoryLayoutException("Memory overlaps")
     })
-    if (baseAddress + memory.size > maxMemory) throw new IllegalMemoryLayoutException("Memory exceeds max memory")
     memoryMap += baseAddress -> memory
+    this
   }
 
-  /**
-    * The maximum memory that can be handled by the processor
-    * @return
-    */
-  def maxMemory: Long
-
-  def reset: Unit
-
-  def step: Unit
+  def memory: collection.immutable.Map[Long, Memory] = {
+    memoryMap.toMap
+  }
 
 }

@@ -39,7 +39,7 @@ class ChannelReadOnlyMemory(val data: SeekableByteChannel) extends ReadOnlyMemor
       startAddress = block
     }
     val indexInCache = (address % 256.Ki).asInstanceOf[Int]
-    if (indexInCache > cachedBytes) throw new IllegalAddressException
+    if (indexInCache > cachedBytes) throw new IllegalAddressException("Address outside memory")
     romCache.get(indexInCache)
   }
 

@@ -14,23 +14,32 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package info.osdevelopment.sysemu.memory
+package info.osdevelopment.sysemu.remote.rest
 
-import info.osdevelopment.sysemu.support.Utilities._
-import org.specs2._
+import akka.actor.ActorRef
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Directives._
+import org.slf4j.LoggerFactory
 
-class CombinedReadWriteMemoryUnitSpec extends mutable.Specification {
+class RestDebugService(val server: ActorRef) {
 
-  /** This specification needs to be sequential because else we will get an OOME */
-  sequential
+  val log = LoggerFactory getLogger classOf[RestDebugService]
 
-  "A CombinedReadWriteMemory" >> {
-    "when created" >> {
-      "should throw an IllegalArgumentException when size is to large" >> {
-        CombinedReadWriteMemory(2.Ei) must throwAn[IllegalArgumentException]
+  val systemService = new RestSystemService
+
+  def route = {
+    pathSingleSlash {
+      get {
+        complete(StatusCodes.OK)
       }
-      "should throw an IllegalArgumentException when size is negative" >> {
-        CombinedReadWriteMemory(-2.Gi) must throwAn[IllegalArgumentException]
+    } ~
+    pathPrefix("system") {
+      systemService.route
+    } ~
+    pathPrefix("shutdown") {
+      post {
+        server ! "shutdown"
+        complete(StatusCodes.OK)
       }
     }
   }

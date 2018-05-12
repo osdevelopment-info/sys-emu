@@ -14,25 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package info.osdevelopment.sysemu.memory
+package info.osdevelopment.sysemu.remote.json
 
-import info.osdevelopment.sysemu.support.Utilities._
-import org.specs2._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import info.osdevelopment.sysemu.system.System
+import java.util.UUID
+import spray.json.{DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFormat}
 
-class CombinedReadWriteMemoryUnitSpec extends mutable.Specification {
+trait SysEmuJsonProtocol extends SprayJsonSupport with DefaultJsonProtocol {
 
-  /** This specification needs to be sequential because else we will get an OOME */
-  sequential
+  implicit object SystemJsonFormat extends RootJsonFormat[System] {
 
-  "A CombinedReadWriteMemory" >> {
-    "when created" >> {
-      "should throw an IllegalArgumentException when size is to large" >> {
-        CombinedReadWriteMemory(2.Ei) must throwAn[IllegalArgumentException]
-      }
-      "should throw an IllegalArgumentException when size is negative" >> {
-        CombinedReadWriteMemory(-2.Gi) must throwAn[IllegalArgumentException]
+    override def read(json: JsValue): System = {
+      json.asJsObject.getFields("uuid") match {
+        case Seq(JsString(uuid)) =>
+          new System(Some(UUID.fromString(uuid)))
       }
     }
+
+    override def write(obj: System): JsValue = {
+      JsObject(("uuid", JsString(obj.uuid.get.toString)))
+    }
+
   }
 
 }
