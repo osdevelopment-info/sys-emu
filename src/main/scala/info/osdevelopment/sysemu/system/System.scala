@@ -16,9 +16,14 @@
  */
 package info.osdevelopment.sysemu.system
 
+import java.util.UUID
 import org.slf4j.LoggerFactory
 
-class System {
+class System(var uuid: Option[UUID]) {
+
+  def this() = {
+    this(None)
+  }
 
   val log = LoggerFactory getLogger classOf[System]
 

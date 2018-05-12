@@ -26,7 +26,7 @@ import info.osdevelopment.sysemu.config.Configuration
 import info.osdevelopment.sysemu.memory.{Memory, ReadOnlyMemory}
 import info.osdevelopment.sysemu.processor.Processor
 import info.osdevelopment.sysemu.processor.x86.i86.Processor8086
-import info.osdevelopment.sysemu.remote.rest.RestDebugService
+import info.osdevelopment.sysemu.remote.rest.RestDebugServer
 import info.osdevelopment.sysemu.support.Utilities._
 import info.osdevelopment.sysemu.system.{System, SystemConfig}
 import java.nio.file.{Files, Paths, StandardOpenOption}
@@ -50,7 +50,7 @@ class Main extends Configuration {
   def run(args: Array[String]): Unit = {
     val actorSystem = ActorSystem("emu-system", config)
     val system = new System
-    val httpRouter = actorSystem.actorOf(Props(classOf[RestDebugService], actorSystem, this),
+    val httpRouter = actorSystem.actorOf(Props(classOf[RestDebugServer], actorSystem, this),
       "restDebugService")
     httpRouter ! "start"
 

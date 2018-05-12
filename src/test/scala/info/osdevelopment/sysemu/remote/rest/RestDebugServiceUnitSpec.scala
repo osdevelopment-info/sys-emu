@@ -1,3 +1,19 @@
+/* sys-emu - A system emulator
+ * Copyright (C) 2018 U. Plonus
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 package info.osdevelopment.sysemu.remote.rest
 
 import akka.http.scaladsl.model.StatusCodes
@@ -12,7 +28,7 @@ class RestDebugServiceUnitSpec extends mutable.Specification with Specs2RouteTes
       val server = TestProbe()
       val service = new RestDebugService(server.ref)
       Get() ~> service.route ~> check {
-        status shouldEqual StatusCodes.OK
+        status must_== StatusCodes.OK
       }
     }
     "with a POST at /shutdown" >> {
@@ -20,7 +36,7 @@ class RestDebugServiceUnitSpec extends mutable.Specification with Specs2RouteTes
         val server = TestProbe()
         val service = new RestDebugService(server.ref)
         Post("/shutdown") ~> service.route ~> check {
-          status shouldEqual StatusCodes.OK
+          status must_== StatusCodes.OK
         }
       }
       "should initiate a shutdown at the server" >> {

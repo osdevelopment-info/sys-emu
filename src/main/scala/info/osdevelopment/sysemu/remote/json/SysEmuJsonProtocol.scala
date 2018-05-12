@@ -14,23 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package info.osdevelopment.sysemu.system
+package info.osdevelopment.sysemu.remote.json
 
-import org.specs2._
+import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import info.osdevelopment.sysemu.system.System
+import java.util.UUID
+import spray.json.{DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFormat}
 
-class SystemUnitSpec extends mutable.Specification with mock.Mockito {
+trait SysEmuJsonProtocol extends SprayJsonSupport with DefaultJsonProtocol {
 
-  "A system should" >> {
-    "perform a single step" >> {
-      val system = mock[System]
-      system.step
-      there was one(system).step
+  implicit object SystemJsonFormat extends RootJsonFormat[System] {
+
+    override def read(json: JsValue): System = {
+      json.asJsObject.getFields("uuid") match {
+        case Seq(JsString(uuid)) =>
+          new System(Some(UUID.fromString(uuid)))
+      }
     }
-    "perform run" >> {
-      val system = mock[System]
-      system.run
-      there was one(system).run
+
+    override def write(obj: System): JsValue = {
+      JsObject(("uuid", JsString(obj.uuid.get.toString)))
     }
+
   }
 
 }
