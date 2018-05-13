@@ -24,6 +24,7 @@ import scala.util.Try
   */
 trait Configuration {
 
+  /** The config read from the file. */
   val config = ConfigFactory.load
 
   lazy val serviceHost = Try(config.getString("service.host")).getOrElse("localhost")
