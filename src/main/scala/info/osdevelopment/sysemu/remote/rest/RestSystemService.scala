@@ -17,14 +17,17 @@
 package info.osdevelopment.sysemu.remote.rest
 
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.model.headers.`Content-Type`
+import akka.http.scaladsl.model.headers.{Location, `Content-Type`}
 import akka.http.scaladsl.server.Directives._
 import info.osdevelopment.sysemu.remote.json.SysEmuJsonProtocol
 import info.osdevelopment.sysemu.system.{System, Systems}
 import java.util.UUID
+import org.slf4j.LoggerFactory
 import spray.json.{JsObject, JsString}
 
 class RestSystemService extends SysEmuJsonProtocol {
+
+  val log = LoggerFactory getLogger classOf[RestSystemService]
 
   var system: Option[System] = None
 
@@ -53,10 +56,12 @@ class RestSystemService extends SysEmuJsonProtocol {
         complete(StatusCodes.OK, Systems.all)
       } ~
       post {
-        val uuid = UUID.randomUUID
-        val system = Some(new System(Some(uuid)))
-        Systems.add(system)
-        complete(StatusCodes.Created, system)
+        extractUri { uri =>
+          val uuid = UUID.randomUUID
+          val system = Some(new System(Some(uuid)))
+          Systems.add(system)
+          complete(StatusCodes.Created, List(Location(uri.copy(path = uri.path + "/" + uuid.toString))), system)
+        }
       }
     }
   }

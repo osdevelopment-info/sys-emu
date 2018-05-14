@@ -17,24 +17,11 @@
 package info.osdevelopment.sysemu.processor
 
 import info.osdevelopment.sysemu.memory.ReadWriteMemory
+import info.osdevelopment.sysemu.processor.test.TestProcessor
 import info.osdevelopment.sysemu.support.Utilities._
 import org.specs2._
 
 class ProcessorUnitSpec extends mutable.Specification {
-
-  class TestProcessor extends Processor {
-    /**
-      * The maximum memory that can be handled by the processor
-      *
-      * @return
-      */
-    override def maxMemory: Long = 1.Mi
-
-    override def reset = {}
-
-    override def step: Unit = {}
-
-  }
 
   "A processor" >> {
     "when adding memory" >> {

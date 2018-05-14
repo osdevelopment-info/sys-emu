@@ -41,6 +41,8 @@ trait Processor {
     memoryMap += baseAddress -> memory
   }
 
+  def name: String
+
   /**
     * The maximum memory that can be handled by the processor
     * @return

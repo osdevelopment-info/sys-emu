@@ -17,23 +17,39 @@
 package info.osdevelopment.sysemu.remote.json
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
+import info.osdevelopment.sysemu.processor.Processor
 import info.osdevelopment.sysemu.system.System
-import java.util.UUID
-import spray.json.{DefaultJsonProtocol, JsObject, JsString, JsValue, RootJsonFormat}
+import spray.json.{DefaultJsonProtocol, JsNumber, JsObject, JsString, JsValue, RootJsonFormat, _}
 
 trait SysEmuJsonProtocol extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit object SystemJsonFormat extends RootJsonFormat[System] {
 
     override def read(json: JsValue): System = {
-      json.asJsObject.getFields("uuid") match {
+      deserializationError("Deserialization is not supported for Systems")
+      /*json.asJsObject.getFields("uuid") match {
         case Seq(JsString(uuid)) =>
           new System(Some(UUID.fromString(uuid)))
-      }
+      }*/
     }
 
     override def write(obj: System): JsValue = {
       JsObject(("uuid", JsString(obj.uuid.get.toString)))
+    }
+
+  }
+
+  implicit object ProcessorJsonFormat extends RootJsonFormat[Processor] {
+
+    override def read(json: JsValue): Processor = {
+      deserializationError("Deserialization is not supported for Processors")
+    }
+
+    override def write(obj: Processor): JsValue = {
+      JsObject(
+        ("name", JsString(obj.name)),
+        ("maxMemory", JsNumber(obj.maxMemory))
+      )
     }
 
   }

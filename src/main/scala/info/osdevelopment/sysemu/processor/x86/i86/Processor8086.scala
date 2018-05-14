@@ -28,6 +28,8 @@ class Processor8086 extends ProcessorX86 {
 
   private var ip: Short = 0x0000.asInstanceOf[Short]
 
+  override def name = "8086"
+
   /**
     * The maximum memory that can be handled by the processor. The 8086 can handle at maximum 1 MiB of memory.
     *

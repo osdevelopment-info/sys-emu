@@ -21,3 +21,11 @@ libraryDependencies += "org.specs2" %% "specs2-mock" % "4.2.0" % "test"
 coverageEnabled := true
 
 scalacOptions += "-feature"
+
+mappings in makeSite ++= Seq(
+  file("LICENSE") -> "LICENSE",
+)
+
+includeFilter in makeSite := ((includeFilter in makeSite).value || "*.md")
+
+enablePlugins(SiteScaladocPlugin)
