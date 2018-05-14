@@ -1,0 +1,121 @@
+#%RAML 1.0
+---
+title: Emulator Debugger Interface
+baseUri: http://localhost:9090/{version}
+version: v0.1
+
+/processors:
+  get:
+    description: Returns an array with all known processor names
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              [
+                "8086",
+                "80186"
+              ]
+      500:
+        description: Returned when the server has a malformed processor plugin
+        body:
+          text/plain:
+            example:
+              Malformed service in server
+  /{name}:
+    get:
+      description: Returns the information for the specified processor
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                {
+                  "name": "8086",
+                  "maxMemory": 1048576
+                }
+        404:
+          description: Returned when the server cannot find the processor with the given name
+          body:
+            application/json:
+              example:
+                {
+                  "message": "No processor with name Unknown can be found."
+                }
+        500:
+          description: Returned when the server has a malformed processor plugin
+          body:
+            text/plain:
+              example:
+                Malformed service in server
+/systems:
+  get:
+    description: Returns all systems
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              [
+                {
+                  "uuid": "46990feb-1e62-4b61-a5a6-dcb177ace655"
+                }
+              ]
+  post:
+    description: Creates a new system
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              {
+                "uuid": "4e68f90d-d360-4932-a29c-1fbe9bb5e7be"
+              }
+  /{uuid}:
+    get:
+      description: Returns the system with the given UUID
+      responses:
+        200:
+          body:
+            application/json:
+              example:
+                {
+                  "uuid": "4e68f90d-d360-4932-a29c-1fbe9bb5e7be"
+                }
+        404:
+          description: Returned when the system with the given UUID cannot be found
+          body:
+            application/json:
+              example:
+                {
+                  "message": "No system with UUID 00000000-0000-0000-0000-000000000000 can be found."
+                }
+    delete:
+      description: Deletes the system with the given UUID
+      responses:
+        202:
+          body:
+            application/json:
+              example:
+                {
+                  "message": "Removed system with UUID 4e68f90d-d360-4932-a29c-1fbe9bb5e7be."
+                }
+        404:
+          description: Returned when the system with the given UUID cannot be found
+          body:
+            application/json:
+              example:
+                {
+                  "message": "No system with UUID 00000000-0000-0000-0000-000000000000 can be found."
+                }
+/shutdown:
+  post:
+    description: Shutdown the server
+    responses:
+      200:
+        description: Always returned, server shuts down
+        body:
+          text/plain:
+            example:
+              OK
+  

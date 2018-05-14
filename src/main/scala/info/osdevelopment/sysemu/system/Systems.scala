@@ -32,15 +32,11 @@ object Systems {
   def add(system: Option[System]): Boolean = {
     system match {
       case Some(sys) =>
-        sys.uuid match {
-          case Some(uuid) =>
-            if (systemMap contains uuid) {
-              false
-            } else {
-              systemMap += (uuid -> system)
-              true
-            }
-          case _ => false
+        if (systemMap contains sys.uuid) {
+          false
+        } else {
+          systemMap += (sys.uuid -> system)
+          true
         }
       case _ => false
     }

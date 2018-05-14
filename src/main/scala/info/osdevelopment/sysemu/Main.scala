@@ -50,8 +50,7 @@ class Main extends Configuration {
   def run(args: Array[String]): Unit = {
     val actorSystem = ActorSystem("emu-system", config)
     val system = new System
-    val httpRouter = actorSystem.actorOf(Props(classOf[RestDebugServer], actorSystem, this),
-      "restDebugService")
+    val httpRouter = actorSystem.actorOf(Props(classOf[RestDebugServer], actorSystem, this), "restDebugServer")
     httpRouter ! "start"
 
     /*val sysConfig = createConfigFromCommandLine(args)

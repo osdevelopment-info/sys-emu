@@ -29,7 +29,7 @@ class RestSystemService extends SysEmuJsonProtocol {
 
   val log = LoggerFactory getLogger classOf[RestSystemService]
 
-  var system: Option[System] = None
+  //var system: Option[System] = None
 
   def route = {
     respondWithHeader(`Content-Type`(MediaTypes.`application/json`))
@@ -58,7 +58,7 @@ class RestSystemService extends SysEmuJsonProtocol {
       post {
         extractUri { uri =>
           val uuid = UUID.randomUUID
-          val system = Some(new System(Some(uuid)))
+          val system = Some(new System(uuid))
           Systems.add(system)
           complete(StatusCodes.Created, List(Location(uri.copy(path = uri.path + "/" + uuid.toString))), system)
         }

@@ -34,7 +34,7 @@ trait SysEmuJsonProtocol extends SprayJsonSupport with DefaultJsonProtocol {
     }
 
     override def write(obj: System): JsValue = {
-      JsObject(("uuid", JsString(obj.uuid.get.toString)))
+      JsObject(("uuid", JsString(obj.uuid.toString)))
     }
 
   }
