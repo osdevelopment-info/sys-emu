@@ -111,6 +111,12 @@ trait Processor {
   def maxMemory: Long
 
   /**
+    * The suggested ROM/BIOS name for the processor. The ROM can then be loaded as resource.
+    * @return the suggested ROM/BIOS name
+    */
+  def romName: String
+
+  /**
     * Resets the processor and starts it new.
     */
   def reset: Unit

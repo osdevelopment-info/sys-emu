@@ -80,6 +80,13 @@ class TestProcessor extends Processor {
   override def maxMemory: Long = 1.Mi
 
   /**
+    * The suggested ROM/BIOS name for the processor. The ROM can then be loaded as resource.
+    *
+    * @return the suggested ROM/BIOS name
+    */
+  override def romName: String = "testrom"
+
+  /**
     * Reset the processor and start it new.
     */
   override def reset = {}

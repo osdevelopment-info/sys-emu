@@ -37,7 +37,7 @@ pipeline {
         }
         stage('Create Artifacts') {
             steps {
-                sh "${sbt} package"
+                sh "${sbt} assembly"
             }
         }
         stage('Archive Artifacts') {

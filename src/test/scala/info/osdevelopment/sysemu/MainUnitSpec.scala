@@ -48,25 +48,25 @@ class MainUnitSpec extends mutable.Specification {
         val systemConfig = program.createConfigFromCommandLine(new Array(0))
         systemConfig must beSuccessfulTry
         systemConfig.get.memory must not be empty
-      }.pendingUntilFixed
+      }
       "with base address 0xF0000 as default" >> {
         val program = new Main
         val systemConfig = program.createConfigFromCommandLine(new Array(0))
         systemConfig must beSuccessfulTry
         systemConfig.get.memory must haveKey(0xf0000L)
-      }.pendingUntilFixed
+      }
       "with base address 0xF0000 when loading a 64 KiB image" >> {
         val program = new Main
-        val systemConfig = program.createConfigFromCommandLine(Array("-bsrc/test/resources/smallrom.img"))
+        val systemConfig = program.createConfigFromCommandLine(Array("--bios=src/test/resources/smallrom.img"))
         systemConfig must beSuccessfulTry
         systemConfig.get.memory must haveKey(0xf0000L)
-      }.pendingUntilFixed
+      }
     }
     "should throw an exception when the given BIOS is not found" >> {
       val program = new Main
-      val systemConfig = program.createConfigFromCommandLine(Array("-b invalid"))
+      val systemConfig = program.createConfigFromCommandLine(Array("--bios", "invalid"))
       systemConfig must beFailedTry.withThrowable[IllegalConfigurationException]("BIOS file does not exist")
-    }.pendingUntilFixed
+    }
   }
 
 }

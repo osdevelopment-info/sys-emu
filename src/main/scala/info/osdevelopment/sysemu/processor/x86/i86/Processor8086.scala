@@ -201,6 +201,13 @@ class Processor8086 extends ProcessorX86 {
   override def maxMemory: Long = 1.Mi
 
   /**
+    * The suggested ROM/BIOS name for the processor. The ROM can then be loaded as resource.
+    *
+    * @return the suggested ROM/BIOS name
+    */
+  override def romName: String = "bios86"
+
+  /**
     * Resets the processor and starts it new.
     */
   override def reset = {

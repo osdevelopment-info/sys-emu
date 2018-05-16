@@ -29,8 +29,11 @@ import info.osdevelopment.sysemu.processor.x86.i86.Processor8086
 import info.osdevelopment.sysemu.remote.rest.RestDebugServer
 import info.osdevelopment.sysemu.support.Utilities._
 import info.osdevelopment.sysemu.system.{System, SystemConfig, Systems}
+import java.io.IOException
 import java.nio.file.{Files, Paths, StandardOpenOption}
+import java.util.ServiceLoader
 import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options}
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object Main {
@@ -69,12 +72,12 @@ class Main extends Configuration {
     val createOption = (Option builder("c") hasArg() longOpt("config") optionalArg(true)
       desc("Create a system from a config file") build())
 
-    val biosOption = (Option builder("b") hasArg() longOpt("bios") optionalArg(true)
+    val biosOption = (Option builder() hasArg() longOpt("bios") optionalArg(true)
       desc("A file that contains a BIOS image") build())
     options.addOption(biosOption)
 
     val cpuOption = (Option builder() hasArg() longOpt("cpu") optionalArg(true)
-      desc("The CPU to emulate") build())
+      desc("The CPU to emulate, defaults to 8086") build())
     options addOption(cpuOption)
 
     val parser = new DefaultParser
@@ -82,51 +85,65 @@ class Main extends Configuration {
 
     val systemConfig = new SystemConfig
 
-    val cpu = if (commandLine hasOption("cpu")) {
-      systemConfig.cpu = commandLine getOptionValue("cpu")
+    systemConfig.cpu = if (commandLine hasOption("cpu")) {
+      commandLine getOptionValue("cpu")
     } else {
-      systemConfig.cpu = "8086"
+      "8086"
     }
 
-    /*val bios = if (commandLine hasOption("b")) {
-      readExternalBios(commandLine getOptionValue ("b"))
+    val processorLoader: ServiceLoader[Processor] = ServiceLoader.load(classOf[Processor])
+    val processor = systemConfig.cpu match {
+      case Some(name) => processorLoader.asScala.find(_.name == name)
+      case _ => None
+    }
+
+    val bios = if (commandLine hasOption("bios")) {
+      readExternalBios(commandLine getOptionValue ("bios"))
     } else {
-      readDefaultBios(cpu)
+      readDefaultBios(processor)
     }
     if (bios.isEmpty) {
       return Failure(new IllegalConfigurationException("BIOS file does not exist"))
     }
     val biosSize = bios.get.size
-    val biosStart = if (cpu.maxMemory < 4.Gi) {
-      cpu.maxMemory - biosSize
+    val biosStart = if (processor.get.maxMemory < 4.Gi) {
+      processor.get.maxMemory - biosSize
     } else {
       4.Gi - biosSize
     }
-    systemConfig.addMemory(biosStart, bios.get)*/
+    systemConfig.addMemory(biosStart, bios.get)
     Success(systemConfig)
   }
 
   private def readExternalBios(fileName: String): scala.Option[Memory] = {
     val biosFile = Paths.get(fileName)
-    if (!Files.exists(biosFile)) {
-      None
-    } else {
+    if (Files.exists(biosFile)) {
       Some(ReadOnlyMemory(Files.newByteChannel(biosFile, StandardOpenOption.READ)))
+    } else {
+      None
     }
   }
 
-  private def readDefaultBios(processor: Processor): scala.Option[Memory] = {
-    processor match {
-      case p: Processor8086 =>
-        val is = getClass.getResourceAsStream("bios86")
-        val rom = new Array[Byte](is.available())
-        is.read(rom)
-        Some(ReadOnlyMemory(rom))
-      case _ =>
-        val is = getClass.getResourceAsStream("bios86")
-        val rom = new Array[Byte](is.available())
-        is.read(rom)
-        Some(ReadOnlyMemory(rom))
+  private def readDefaultBios(processor: scala.Option[Processor]): scala.Option[Memory] = {
+    val is = processor match {
+      case Some(proc) => Try(proc.getClass.getResourceAsStream(proc.romName))
+      case _ => return None
+    }
+    val romSize = is match {
+      case Success(is) => Try(is.available)
+      case _ => return None
+    }
+    val bios = romSize match {
+      case Success(size) => Some(new Array[Byte](size))
+      case _ => return None
+    }
+    val read = bios match {
+      case Some(b) => Try(is.get.read(b))
+      case _ => return None
+    }
+    read match {
+      case Success(_) => Some(ReadOnlyMemory(bios.get))
+      case _ => None
     }
   }
 

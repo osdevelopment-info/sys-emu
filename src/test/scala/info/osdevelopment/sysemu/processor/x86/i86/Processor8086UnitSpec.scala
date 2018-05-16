@@ -28,6 +28,18 @@ class Processor8086UnitSpec extends mutable.Specification {
         val processor = processorTry.get
         processor.get.name must_== "8086"
       }
+      "with a loadable default BIOS" >> {
+        val processorLoader: ServiceLoader[Processor] = ServiceLoader.load(classOf[Processor])
+        val processorTry = Try(processorLoader.asScala.find(_.name == "8086"))
+        val processor = processorTry.get.get
+        val is = processor.getClass.getResourceAsStream(processor.romName)
+        val romSize = Try(is.available)
+        romSize must beSuccessfulTry
+        val bios = new Array[Byte](romSize.get)
+        val bytesRead = Try(is.read(bios))
+        bytesRead must beSuccessfulTry
+        bytesRead.get must_== romSize.get
+      }
     }
     "should have a max memory of 1 MiB" >> {
       val processor = new Processor8086
