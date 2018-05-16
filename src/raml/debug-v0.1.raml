@@ -5,23 +5,6 @@ baseUri: http://localhost:9090/{version}
 version: v0.1
 
 /processors:
-  get:
-    description: Returns an array with all known processor names
-    responses:
-      200:
-        body:
-          application/json:
-            example:
-              [
-                "8086",
-                "80186"
-              ]
-      500:
-        description: Returned when the server has a malformed processor plugin
-        body:
-          text/plain:
-            example:
-              Malformed service in server
   /{name}:
     get:
       description: Returns the information for the specified processor
@@ -48,29 +31,24 @@ version: v0.1
             text/plain:
               example:
                 Malformed service in server
-/systems:
   get:
-    description: Returns all systems
+    description: Returns an array with all known processor names
     responses:
       200:
         body:
           application/json:
             example:
               [
-                {
-                  "uuid": "46990feb-1e62-4b61-a5a6-dcb177ace655"
-                }
+                "8086",
+                "80186"
               ]
-  post:
-    description: Creates a new system
-    responses:
-      201:
+      500:
+        description: Returned when the server has a malformed processor plugin
         body:
-          application/json:
+          text/plain:
             example:
-              {
-                "uuid": "4e68f90d-d360-4932-a29c-1fbe9bb5e7be"
-              }
+              Malformed service in server
+/systems:
   /{uuid}:
     get:
       description: Returns the system with the given UUID
@@ -108,6 +86,28 @@ version: v0.1
                 {
                   "message": "No system with UUID 00000000-0000-0000-0000-000000000000 can be found."
                 }
+  get:
+    description: Returns all systems
+    responses:
+      200:
+        body:
+          application/json:
+            example:
+              [
+                {
+                  "uuid": "4e68f90d-d360-4932-a29c-1fbe9bb5e7be"
+                }
+              ]
+  post:
+    description: Creates a new system
+    responses:
+      201:
+        body:
+          application/json:
+            example:
+              {
+                "uuid": "4e68f90d-d360-4932-a29c-1fbe9bb5e7be"
+              }
 /shutdown:
   post:
     description: Shutdown the server

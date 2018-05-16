@@ -28,7 +28,7 @@ import info.osdevelopment.sysemu.processor.Processor
 import info.osdevelopment.sysemu.processor.x86.i86.Processor8086
 import info.osdevelopment.sysemu.remote.rest.RestDebugServer
 import info.osdevelopment.sysemu.support.Utilities._
-import info.osdevelopment.sysemu.system.{System, SystemConfig}
+import info.osdevelopment.sysemu.system.{System, SystemConfig, Systems}
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options}
 import scala.util.{Failure, Success, Try}
@@ -65,11 +65,15 @@ class Main extends Configuration {
   @throws[IllegalConfigurationException]
   def createConfigFromCommandLine(args: Array[String]): Try[SystemConfig] = {
     val options = new Options()
+
+    val createOption = (Option builder("c") hasArg() longOpt("config") optionalArg(true)
+      desc("Create a system from a config file") build())
+
     val biosOption = (Option builder("b") hasArg() longOpt("bios") optionalArg(true)
       desc("A file that contains a BIOS image") build())
     options.addOption(biosOption)
 
-    val cpuOption = (Option builder("c") hasArg() longOpt("cpu") optionalArg(true)
+    val cpuOption = (Option builder() hasArg() longOpt("cpu") optionalArg(true)
       desc("The CPU to emulate") build())
     options addOption(cpuOption)
 
@@ -78,18 +82,13 @@ class Main extends Configuration {
 
     val systemConfig = new SystemConfig
 
-    val cpu = if (commandLine hasOption("c")) {
-      commandLine getOptionValue("c") match {
-        case "8086" => new Processor8086
-        case _ =>
-          return Failure(new IllegalConfigurationException("Invalid CPU"))
-      }
+    val cpu = if (commandLine hasOption("cpu")) {
+      systemConfig.cpu = commandLine getOptionValue("cpu")
     } else {
-      new Processor8086
+      systemConfig.cpu = "8086"
     }
-    systemConfig.addProcessor(cpu)
 
-    val bios = if (commandLine hasOption("b")) {
+    /*val bios = if (commandLine hasOption("b")) {
       readExternalBios(commandLine getOptionValue ("b"))
     } else {
       readDefaultBios(cpu)
@@ -103,7 +102,7 @@ class Main extends Configuration {
     } else {
       4.Gi - biosSize
     }
-    systemConfig.addMemory(biosStart, bios.get)
+    systemConfig.addMemory(biosStart, bios.get)*/
     Success(systemConfig)
   }
 

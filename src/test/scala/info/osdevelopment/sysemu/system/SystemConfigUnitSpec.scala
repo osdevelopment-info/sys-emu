@@ -20,28 +20,74 @@ import info.osdevelopment.sysemu.memory.ReadWriteMemory
 import info.osdevelopment.sysemu.processor.test.TestProcessor
 import info.osdevelopment.sysemu.processor.{IllegalMemoryLayoutException, Processor}
 import info.osdevelopment.sysemu.support.Utilities._
+import java.io.File
 import org.specs2._
 
 class SystemConfigUnitSpec extends mutable.Specification {
 
   "A system config" >> {
-    "when adding a processor" >> {
-      "should accept the first processor" >> {
-        val config = new SystemConfig
-        config.addProcessor(new TestProcessor)
-        success
+    "should load a HOCON file" >> {
+      new SystemConfig(Some(new File("src/test/resources/config/unknown-system.conf")))
+      success
+    }
+    "should not fail on a missing file" >> {
+      new SystemConfig(Some(new File("invalid.conf")))
+      success
+    }
+    "when loading a HOCON file" >> {
+      "should read the CPU" >> {
+        val systemConfig = new SystemConfig(Some(new File("src/test/resources/config/unknown-system.conf")))
+        systemConfig.cpu must_== Some("68000")
       }
-      "should accept a second processor" >> {
-        val config = new SystemConfig
-        config.addProcessor(new TestProcessor)
-        config.addProcessor(new TestProcessor)
-        success
+      "should read the CPU count" >> {
+        val systemConfig = new SystemConfig(Some(new File("src/test/resources/config/unknown-system.conf")))
+        systemConfig.cpuCount must_== 3
       }
-      "should return an added processor" >> {
-        val processor = new TestProcessor
-        val config = new SystemConfig
-        config.addProcessor(processor)
-        config.processors must contain(processor)
+    }
+    "when loading an empty HOCON file" >> {
+      "should return the default CPU" >> {
+        val systemConfig = new SystemConfig(Some(new File("src/test/resources/config/empty-system.conf")))
+        systemConfig.cpu must_== Some("8086")
+      }
+      "should read the CPU count" >> {
+        val systemConfig = new SystemConfig(Some(new File("src/test/resources/config/empty-system.conf")))
+        systemConfig.cpuCount must_== 1
+      }
+    }
+    "when trying to load a not existing file" >> {
+      "should return the uninitialized CPU" >> {
+        val systemConfig = new SystemConfig(Some(new File("invalid.conf")))
+        systemConfig.cpu must beNone
+      }
+      "should read no CPU count" >> {
+        val systemConfig = new SystemConfig(Some(new File("invalid.conf")))
+        systemConfig.cpuCount must_== 0
+      }
+    }
+    "when creating from scratch" >> {
+      "should have no CPU by default" >> {
+        val systemConfig = new SystemConfig()
+        systemConfig.cpu must beNone
+      }
+      "should have the CPU set" >> {
+        val systemConfig = new SystemConfig()
+        systemConfig.cpu = "Z8"
+        systemConfig.cpu must_== Some("Z8")
+      }
+      "should have no CPU when set to null" >> {
+        val systemConfig = new SystemConfig()
+        systemConfig.cpu = "Z8"
+        systemConfig.cpu = null
+        systemConfig.cpu must beNone
+      }
+      "should have 0 CPU count by default" >> {
+        val systemConfig = new SystemConfig()
+        systemConfig.cpuCount must_== 0
+      }
+      "should have the CPU count set" >> {
+        val systemConfig = new SystemConfig()
+        systemConfig.cpuCount = 16
+        systemConfig.cpuCount must_== 16
       }
     }
     "when adding memory" >> {

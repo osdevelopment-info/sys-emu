@@ -16,11 +16,20 @@
  */
 package info.osdevelopment.sysemu.memory
 
+/**
+  * A read-only memory backed by an array.
+  * @param data the data for the read-only memory.
+  */
 class ArrayReadOnlyMemory (val data: Array[Byte]) extends ReadOnlyMemory {
 
   /** Return the size of the memory. */
   override def size: Long = data.length
 
+  /**
+    * The implementation of the read.
+    * @param address the address that should be read
+    * @return the byte read at the given address
+    */
   override protected def doRead(address: Long): Byte = {
     data(address.asInstanceOf[Int])
   }

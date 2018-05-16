@@ -16,21 +16,91 @@
  */
 package info.osdevelopment.sysemu.system
 
+import com.typesafe.config.{Config, ConfigFactory, ConfigParseOptions}
 import info.osdevelopment.sysemu.memory.Memory
 import info.osdevelopment.sysemu.processor.{IllegalMemoryLayoutException, Processor}
+import java.io.File
 import scala.collection.LinearSeq
+import scala.util.{Failure, Success, Try}
 
-class SystemConfig {
+/**
+  * This class is used to create a system configuration which then can be used to create a system.
+  *
+  * @param configFile the file to read the configuration from
+  */
+class SystemConfig (val configFile: Option[File]) {
 
-  private val _processors = collection.mutable.ListBuffer[Processor]()
+  /**
+    * The CPU(s) of the system.
+    */
+  private var _cpu: Option[String] = None
 
-  def addProcessor(processor: Processor): SystemConfig = {
-    _processors += processor
-    this
+  /**
+    * The number of CPU(s) of the type _cpu in the system.
+    */
+  private var _cpuCount: Int = 0
+
+  /**
+    * A convenient constructor to create a system configuration without any configuration file.
+    * @return a new empty system configuration
+    */
+  def this() = {
+    this(None)
   }
 
-  def processors: LinearSeq[Processor] = {
-    _processors.toList
+  val parseOptions = ConfigParseOptions.defaults.setAllowMissing(false)
+  /**
+    * The read configuration from the file.
+    */
+  private val config: Option[Config] = {
+    configFile match {
+      case Some(cFile) =>
+        Try(ConfigFactory.parseFileAnySyntax(cFile, parseOptions)) match {
+          case Success(conf) => Some(conf)
+          case _ => None
+        }
+      case None => None
+    }
+  }
+  config match {
+    case Some(conf) =>
+      cpu = Try(conf.getString("system.cpu")).getOrElse("8086")
+      cpuCount = Try(conf.getInt("system.cpuCount")).getOrElse(1)
+    case None => None
+  }
+
+  /**
+    * Sets the CPU of the system.
+    * @param cpu the CPU of the system.
+    */
+  def cpu_=(cpu: String) = {
+    if (cpu == null) {
+      _cpu = None
+    } else {
+      _cpu = Some(cpu)
+    }
+  }
+
+  /**
+    * Returns the currently set CPU of the system.
+    * @return the currently set CPU
+    */
+  def cpu: Option[String] = _cpu
+
+  /**
+    * Sets the number of CPU(s) of the type _cpu in the system.
+    * @param cpuCount the number of CPU(s) in the system
+    */
+  def cpuCount_=(cpuCount: Int) = {
+    _cpuCount = cpuCount
+  }
+
+  /**
+    * Returns the currently set number of CPU(s) of the type _cpu of the system.
+    * @return the currently set number of CPU(s)
+    */
+  def cpuCount: Int = {
+    _cpuCount
   }
 
   private val memoryMap = collection.mutable.Map[Long, Memory]()
