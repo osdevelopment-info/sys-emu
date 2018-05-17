@@ -87,6 +87,14 @@ class TestProcessor extends Processor {
   override def romName: String = "testrom"
 
   /**
+    * Calculates the start address for a ROM/BIOS based on the size. The start address may be constant or dynamic
+    * depending on the size (e.g. for x86). The start address is not necessarily the start address for the processor.
+    * The start address is None if the ROM/BIOS is too large for the processor.
+    * @return the start address for the ROM/BIOS depending on the architecture
+    */
+  override def calculateRomStart(romSize: Long) = if (romSize < maxMemory) Some(0) else None
+
+  /**
     * Reset the processor and start it new.
     */
   override def reset = {}

@@ -65,54 +65,59 @@ class Main extends Configuration {
     }*/
   }
 
-  @throws[IllegalConfigurationException]
-  def createConfigFromCommandLine(args: Array[String]): Try[SystemConfig] = {
+  def createConfigFromCommandLine(args: Array[String]): scala.Option[SystemConfig] = {
     val options = new Options()
 
+    val restOption = (Option builder("r") longOpt("rest") optionalArg(true)
+      desc("Start the REST interface to control sys-emu from remote.") build())
+
     val createOption = (Option builder("c") hasArg() longOpt("config") optionalArg(true)
-      desc("Create a system from a config file") build())
+      desc("Create a system from a config file.") build())
 
     val biosOption = (Option builder() hasArg() longOpt("bios") optionalArg(true)
-      desc("A file that contains a BIOS image") build())
+      desc("A file that contains a BIOS image. Only evaluated if also --cpu is given") build())
     options.addOption(biosOption)
 
     val cpuOption = (Option builder() hasArg() longOpt("cpu") optionalArg(true)
-      desc("The CPU to emulate, defaults to 8086") build())
+      desc("The CPU to emulate, defaults to 8086.") build())
     options addOption(cpuOption)
 
     val parser = new DefaultParser
     val commandLine = parser parse(options, args)
 
-    val systemConfig = new SystemConfig
+    if (commandLine hasOption("cpu")) {
+      val systemConfig = new SystemConfig
 
-    systemConfig.cpu = if (commandLine hasOption("cpu")) {
-      commandLine getOptionValue("cpu")
-    } else {
-      "8086"
-    }
+      systemConfig.cpu = commandLine getOptionValue ("cpu")
 
-    val processorLoader: ServiceLoader[Processor] = ServiceLoader.load(classOf[Processor])
-    val processor = systemConfig.cpu match {
-      case Some(name) => processorLoader.asScala.find(_.name == name)
-      case _ => None
-    }
+      val processorLoader: ServiceLoader[Processor] = ServiceLoader.load(classOf[Processor])
+      val processor = systemConfig.cpu match {
+        case Some(name) => processorLoader.asScala.find(_.name == name)
+        case _ => None
+      }
 
-    val bios = if (commandLine hasOption("bios")) {
-      readExternalBios(commandLine getOptionValue ("bios"))
+      val bios = if (commandLine hasOption ("bios")) {
+        readExternalBios(commandLine getOptionValue ("bios"))
+      } else {
+        readDefaultBios(processor)
+      }
+      processor match {
+        case Some(proc) =>
+          bios match {
+            case Some(rom) =>
+              proc.calculateRomStart(rom.size) match {
+                case Some(address) =>
+                  systemConfig.addMemory(address, rom)
+                case None =>
+              }
+            case None =>
+          }
+        case None =>
+      }
+      Some(systemConfig)
     } else {
-      readDefaultBios(processor)
+      None
     }
-    if (bios.isEmpty) {
-      return Failure(new IllegalConfigurationException("BIOS file does not exist"))
-    }
-    val biosSize = bios.get.size
-    val biosStart = if (processor.get.maxMemory < 4.Gi) {
-      processor.get.maxMemory - biosSize
-    } else {
-      4.Gi - biosSize
-    }
-    systemConfig.addMemory(biosStart, bios.get)
-    Success(systemConfig)
   }
 
   private def readExternalBios(fileName: String): scala.Option[Memory] = {

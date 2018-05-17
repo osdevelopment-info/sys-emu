@@ -16,56 +16,37 @@
  */
 package info.osdevelopment.sysemu
 
-import info.osdevelopment.sysemu.processor.x86.i86.Processor8086
 import org.specs2._
 
 class MainUnitSpec extends mutable.Specification {
 
   "The program" >> {
-    "should create a CPU" >> {
+    "should create no config" >> {
       "without command line arguments" >> {
         val program = new Main
         val systemConfig = program.createConfigFromCommandLine(new Array(0))
-        systemConfig must beSuccessfulTry
-        systemConfig.get.cpu must not be empty
+        systemConfig must beNone
       }
-      "of type 8086 as default" >> {
+      "when the a BIOS witout CPU is given" >> {
         val program = new Main
-        val systemConfig = program.createConfigFromCommandLine(new Array(0))
-        systemConfig must beSuccessfulTry
-        systemConfig.get.cpu must_== Some("8086")
+        val systemConfig = program.createConfigFromCommandLine(Array("--bios", "invalid"))
+        systemConfig must beNone
       }
-      "of type 8086 with the appropriate command line argument" >> {
+    }
+    "should create a config" >> {
+      "with CPU type 8086 with the appropriate command line argument" >> {
         val program = new Main
         val systemConfig = program.createConfigFromCommandLine(Array("--cpu=8086"))
-        systemConfig must beSuccessfulTry
+        systemConfig must beSome
         systemConfig.get.cpu must_== Some("8086")
       }
-    }
-    "should add a BIOS" >> {
-      "without command line arguments" >> {
+      "with a BIOS at base address 0xF0000 when loading a 64 KiB image for 8086" >> {
         val program = new Main
-        val systemConfig = program.createConfigFromCommandLine(new Array(0))
-        systemConfig must beSuccessfulTry
-        systemConfig.get.memory must not be empty
-      }
-      "with base address 0xF0000 as default" >> {
-        val program = new Main
-        val systemConfig = program.createConfigFromCommandLine(new Array(0))
-        systemConfig must beSuccessfulTry
+        val systemConfig = program.createConfigFromCommandLine(
+          Array("--cpu=8086", "--bios=src/test/resources/smallrom.img"))
+        systemConfig must beSome
         systemConfig.get.memory must haveKey(0xf0000L)
       }
-      "with base address 0xF0000 when loading a 64 KiB image" >> {
-        val program = new Main
-        val systemConfig = program.createConfigFromCommandLine(Array("--bios=src/test/resources/smallrom.img"))
-        systemConfig must beSuccessfulTry
-        systemConfig.get.memory must haveKey(0xf0000L)
-      }
-    }
-    "should throw an exception when the given BIOS is not found" >> {
-      val program = new Main
-      val systemConfig = program.createConfigFromCommandLine(Array("--bios", "invalid"))
-      systemConfig must beFailedTry.withThrowable[IllegalConfigurationException]("BIOS file does not exist")
     }
   }
 
