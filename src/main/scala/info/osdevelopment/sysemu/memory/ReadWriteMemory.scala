@@ -17,24 +17,37 @@
 package info.osdevelopment.sysemu.memory
 
 import info.osdevelopment.sysemu.support.Utilities._
+import scala.util.{Failure, Try}
 
+/**
+  * Companion object used to create a new read-write memory up to 2^60^ (1 EiB). Please note that the memory will be
+  * allocated immediately at creation on your host.
+  */
 object ReadWriteMemory {
 
-  def apply(): ReadWriteMemory = {
+  /**
+    * Creates a default read-write memory with 1 GiB.
+    * @return a read-write memory with 1 GiB
+    */
+  def apply(): Try[ReadWriteMemory] = {
     apply(1.Gi)
   }
 
-  def apply(size: Long): ReadWriteMemory = {
-    if (size <= 0) {
-      throw new IllegalArgumentException("Size must be greater than 0")
-    }
-    if (size > 1.Ei) {
-      throw new IllegalArgumentException("Max size supported is 1 EiB")
-    }
-    if (size > 1.Gi) {
-      CombinedReadWriteMemory(size)
-    } else {
-      SimpleReadWriteMemory(size)
+  /**
+    * Creates a read-write memory with the given `size`.
+    * @param size the size of the memory
+    * @return the read-write memory with the given size
+    * @throws IllegalArgumentException when the size is either negative or too large
+    */
+  @throws[IllegalArgumentException]
+  def apply(size: Long): Try[ReadWriteMemory] = {
+    if (size <= 0 | size > 1.Ei) Failure(new IllegalArgumentException("Max size supported is 1 EiB"))
+    else {
+      if (size > 1.Gi) {
+        CombinedReadWriteMemory(size)
+      } else {
+        SimpleReadWriteMemory(size)
+      }
     }
   }
 
@@ -44,26 +57,40 @@ abstract class ReadWriteMemory protected() extends Memory {
 
   /**
     * Read a single byte from the memory at the given address.
-    *
-    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    * @param address the `address` to read from
+    * @return the byte read.
+    * @throws IllegalAddressException when the address is outside the memory
     */
-  override final def readByte(address: Long): Byte = {
-    if (address < 0 | address >= size) throw new IllegalAddressException("Address outside memory")
-    doRead(address)
+  @throws[IllegalAddressException]
+  override final def readByte(address: Long): Try[Byte] = {
+    if (address < 0 | address >= size) Failure(new IllegalAddressException("Address outside memory"))
+    else doRead(address)
   }
-
-  protected def doRead(address: Long): Byte
 
   /**
-    * Write a single byte to the memory at the given address.
-    *
-    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    * The read method to be implemented by a subclass.
+    * @param address the address to read
+    * @return the byte read at the given address
     */
-  override final def writeByte(address: Long, value: Byte): Unit = {
-    if (address < 0 | address >= size) throw new IllegalAddressException("Address outside memory")
-    doWrite(address, value)
+  protected def doRead(address: Long): Try[Byte]
+
+  /**
+    * Write a single [[scala.Byte Byte]] to the memory at the given address.
+    * @param address the `address` to write to
+    * @param value the `value` to write
+    * @throws IllegalAddressException when the address is outside the range of the memory
+    */
+  @throws[IllegalAddressException]
+  override final def writeByte(address: Long, value: Byte): Try[Unit] = {
+    if (address < 0 | address >= size) Failure(new IllegalAddressException("Address outside memory"))
+    else doWrite(address, value)
   }
 
-  protected def doWrite(address: Long, value: Byte)
+  /**
+    * The write method to be implemented by a subclass.
+    * @param address the address to write
+    * @param value the `value` to write
+    */
+  protected def doWrite(address: Long, value: Byte): Try[Unit]
 
 }

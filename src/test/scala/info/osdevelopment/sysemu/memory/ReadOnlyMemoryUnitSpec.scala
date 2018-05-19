@@ -16,12 +16,9 @@
  */
 package info.osdevelopment.sysemu.memory
 
-import java.nio.file.{FileSystems, Files, StandardOpenOption}
-import java.util.EnumSet
-
 import info.osdevelopment.sysemu.support.Utilities._
+import java.nio.file.{FileSystems, Files, StandardOpenOption}
 import org.specs2._
-
 import scala.util.Random
 
 class ReadOnlyMemoryUnitSpec extends mutable.Specification {
@@ -29,97 +26,123 @@ class ReadOnlyMemoryUnitSpec extends mutable.Specification {
   "A ReadOnlyMemory" >> {
     "should be initializable with an array" >> {
       val data = new Array[Byte](1.Mi.asInstanceOf[Int])
-      val memory = ReadOnlyMemory(data)
-      success
+      ReadOnlyMemory(data) must beSuccessfulTry
     }
     "should be initializable with a seekable byte channel" >> {
       val image = FileSystems.getDefault.getPath("src", "test", "resources", "smallrom.img")
       val channel = Files.newByteChannel(image, StandardOpenOption.READ)
-      val memory = ReadOnlyMemory(channel)
-      success
+      ReadOnlyMemory(channel) must beSuccessfulTry
     }
     "when initialized with an array" >> {
       "should be able to read a byte" >> {
         val random = new Random
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
         random.nextBytes(data)
-        val memory = ReadOnlyMemory(data)
-        data(0x0001) must_== memory.readByte(0x0001)
+        val tryMemory = ReadOnlyMemory(data)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(0x0001) must beSuccessfulTry(data(0x0001))
       }
       "should ignore writing a byte" >> {
         val random = new Random
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
         random.nextBytes(data)
-        val memory = ReadOnlyMemory(data)
+        val tryMemory = ReadOnlyMemory(data)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
         val change: Byte = (data(0x0002) + 1).asInstanceOf[Byte]
         memory.writeByte(0x0002, change)
-        change must_!== memory.readByte(0x0002)
+        memory.readByte(0x0002) must beSuccessfulTry
+        memory.readByte(0x0002).get must_!= change
       }
-      "should throw an exception when the written address is negative" >> {
+      "should fail when the written address is negative" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
-        val memory = ReadOnlyMemory(data)
-        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
+        val tryMemory = ReadOnlyMemory(data)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the written address is too large" >> {
+      "should fail when the written address is too large" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
-        val memory = ReadOnlyMemory(data)
-        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
+        val tryMemory = ReadOnlyMemory(data)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the read address is negative" >> {
+      "should fail when the read address is negative" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
-        val memory = ReadOnlyMemory(data)
-        memory.readByte(-1) must throwAn[IllegalAddressException]
+        val tryMemory = ReadOnlyMemory(data)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(-1) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the read address is too large" >> {
+      "should fail when the read address is too large" >> {
         val data = new Array[Byte](1.Mi.asInstanceOf[Int])
-        val memory = ReadOnlyMemory(data)
-        memory.readByte(Int.MaxValue) must throwAn[IllegalAddressException]
+        val tryMemory = ReadOnlyMemory(data)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(Int.MaxValue) must beFailedTry.withThrowable[IllegalAddressException]
       }
     }
     "when initialized with a seekable byte channel" >> {
       "should be able to read a byte" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "smallrom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
-        val memory = ReadOnlyMemory(channel)
-        0xce.asInstanceOf[Byte] must_== memory.readByte(0x0001)
+        val tryMemory = ReadOnlyMemory(channel)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(0x0001) must beSuccessfulTry(0xce.asInstanceOf[Byte])
       }
       "should ignore writing a byte" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "smallrom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
-        val memory = ReadOnlyMemory(channel)
+        val tryMemory = ReadOnlyMemory(channel)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
         memory.writeByte(0x0002, 0x2f.asInstanceOf[Byte])
-        0x2f.asInstanceOf[Byte] must_!== memory.readByte(0x0002)
+        memory.readByte(0x0002) must beSuccessfulTry
+        memory.readByte(0x0002) must_!= 0x2f.asInstanceOf[Byte]
       }
       "should be able to read a byte from a high address (and update the cache)" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
-        val memory = ReadOnlyMemory(channel)
-        0xc9.asInstanceOf[Byte] must_== memory.readByte(0x0000000000000002L)
-        0x36.asInstanceOf[Byte] must_== memory.readByte(0x0000000000040002L)
+        val tryMemory = ReadOnlyMemory(channel)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(0x0000000000000002L) must beSuccessfulTry.withValue(0xc9.asInstanceOf[Byte])
+        memory.readByte(0x0000000000040002L) must beSuccessfulTry.withValue(0x36.asInstanceOf[Byte])
       }
-      "should throw an exception when the written address is negative" >> {
+      "should fail when the written address is negative" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
-        val memory = ReadOnlyMemory(channel)
-        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
+        val tryMemory = ReadOnlyMemory(channel)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the written address is too large" >> {
+      "should fail when the written address is too large" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
-        val memory = ReadOnlyMemory(channel)
-        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
+        val tryMemory = ReadOnlyMemory(channel)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the read address is negative" >> {
+      "should fail when the read address is negative" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
-        val memory = ReadOnlyMemory(channel)
-        memory.readByte(-1) must throwAn[IllegalAddressException]
+        val tryMemory = ReadOnlyMemory(channel)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(-1) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the read address is too large" >> {
+      "should fail when the read address is too large" >> {
         val image = FileSystems.getDefault.getPath("src", "test", "resources", "largerom.img")
         val channel = Files.newByteChannel(image, StandardOpenOption.READ)
-        val memory = ReadOnlyMemory(channel)
-        memory.readByte(Int.MaxValue) must throwAn[IllegalAddressException]
+        val tryMemory = ReadOnlyMemory(channel)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(Int.MaxValue) must beFailedTry.withThrowable[IllegalAddressException]
       }
     }
   }

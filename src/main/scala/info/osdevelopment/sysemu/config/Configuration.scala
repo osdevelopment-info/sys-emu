@@ -24,7 +24,9 @@ import scala.util.Try
   */
 trait Configuration {
 
-  /** The config read from the file. */
+  /**
+    * The config read from the file.
+    */
   val config = ConfigFactory.load
 
   /**

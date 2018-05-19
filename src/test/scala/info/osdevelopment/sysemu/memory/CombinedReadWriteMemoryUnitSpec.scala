@@ -26,11 +26,11 @@ class CombinedReadWriteMemoryUnitSpec extends mutable.Specification {
 
   "A CombinedReadWriteMemory" >> {
     "when created" >> {
-      "should throw an IllegalArgumentException when size is to large" >> {
-        CombinedReadWriteMemory(2.Ei) must throwAn[IllegalArgumentException]
+      "should fail when size is to large" >> {
+        CombinedReadWriteMemory(2.Ei) must beFailedTry.withThrowable[IllegalArgumentException]
       }
-      "should throw an IllegalArgumentException when size is negative" >> {
-        CombinedReadWriteMemory(-2.Gi) must throwAn[IllegalArgumentException]
+      "should fail when size is negative" >> {
+        CombinedReadWriteMemory(-2.Gi) must beFailedTry.withThrowable[IllegalArgumentException]
       }
     }
   }

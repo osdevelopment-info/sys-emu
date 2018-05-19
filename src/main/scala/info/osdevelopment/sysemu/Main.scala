@@ -18,23 +18,16 @@ package info.osdevelopment.sysemu
 
 
 import akka.actor.{ActorSystem, Props}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.Directives._
 import info.osdevelopment.sysemu.config.Configuration
 import info.osdevelopment.sysemu.memory.{Memory, ReadOnlyMemory}
 import info.osdevelopment.sysemu.processor.Processor
-import info.osdevelopment.sysemu.processor.x86.i86.Processor8086
 import info.osdevelopment.sysemu.remote.rest.RestDebugServer
-import info.osdevelopment.sysemu.support.Utilities._
-import info.osdevelopment.sysemu.system.{System, SystemConfig, Systems}
-import java.io.IOException
+import info.osdevelopment.sysemu.system.{System, SystemConfig}
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.util.ServiceLoader
-import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options}
+import org.apache.commons.cli.{DefaultParser, Option, Options}
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
+import scala.util.{Success, Try}
 
 object Main {
 
@@ -123,7 +116,12 @@ class Main extends Configuration {
   private def readExternalBios(fileName: String): scala.Option[Memory] = {
     val biosFile = Paths.get(fileName)
     if (Files.exists(biosFile)) {
-      Some(ReadOnlyMemory(Files.newByteChannel(biosFile, StandardOpenOption.READ)))
+      val rom = ReadOnlyMemory(Files.newByteChannel(biosFile, StandardOpenOption.READ))
+      if (rom.isSuccess) {
+        Some(rom.get)
+      } else {
+        None
+      }
     } else {
       None
     }
@@ -147,7 +145,13 @@ class Main extends Configuration {
       case _ => return None
     }
     read match {
-      case Success(_) => Some(ReadOnlyMemory(bios.get))
+      case Success(_) =>
+        val rom = ReadOnlyMemory(bios.get)
+        if (rom.isSuccess) {
+          Some(rom.get)
+        } else {
+          None
+        }
       case _ => None
     }
   }

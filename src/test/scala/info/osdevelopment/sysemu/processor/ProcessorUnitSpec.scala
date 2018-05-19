@@ -28,35 +28,43 @@ class ProcessorUnitSpec extends mutable.Specification {
       "should accept one memory" >> {
         val processor = new TestProcessor
         val memory = ReadWriteMemory(512.Ki)
-        processor.addMemory(0x0000, memory)
+        memory must beSuccessfulTry
+        processor.addMemory(0x0000, memory.get)
         success
       }
       "should accept two non-overlapping memories" >> {
         val processor = new TestProcessor
         val memory1 = ReadWriteMemory(512.Ki)
+        memory1 must beSuccessfulTry
         val memory2 = ReadWriteMemory(512.Ki)
-        processor.addMemory(0x00000, memory1)
-        processor.addMemory(0x80000, memory2)
+        memory2 must beSuccessfulTry
+        processor.addMemory(0x00000, memory1.get)
+        processor.addMemory(0x80000, memory2.get)
         success
       }
       "should not accept two overlapping memories (higher added last)" >> {
         val processor = new TestProcessor
         val memory1 = ReadWriteMemory(512.Ki)
+        memory1 must beSuccessfulTry
         val memory2 = ReadWriteMemory(512.Ki)
-        processor.addMemory(0x00000, memory1)
-        processor.addMemory(0x7ffff, memory2) must throwAn[IllegalMemoryLayoutException]
+        memory2 must beSuccessfulTry
+        processor.addMemory(0x00000, memory1.get)
+        processor.addMemory(0x7ffff, memory2.get) must throwAn[IllegalMemoryLayoutException]
       }
       "should not accept two overlapping memories (higher added first)" >> {
         val processor = new TestProcessor
         val memory1 = ReadWriteMemory(512.Ki)
+        memory1 must beSuccessfulTry
         val memory2 = ReadWriteMemory(512.Ki)
-        processor.addMemory(0x7ffff, memory2)
-        processor.addMemory(0x00000, memory1) must throwAn[IllegalMemoryLayoutException]
+        memory2 must beSuccessfulTry
+        processor.addMemory(0x7ffff, memory2.get)
+        processor.addMemory(0x00000, memory1.get) must throwAn[IllegalMemoryLayoutException]
       }
       "should not accept a memory beyond the end of addressable space" >> {
         val processor = new TestProcessor
         val memory = ReadWriteMemory(512.Ki)
-        processor.addMemory(0xc0000, memory) must throwAn[IllegalMemoryLayoutException]
+        memory must beSuccessfulTry
+        processor.addMemory(0xc0000, memory.get) must throwAn[IllegalMemoryLayoutException]
       }
     }
   }

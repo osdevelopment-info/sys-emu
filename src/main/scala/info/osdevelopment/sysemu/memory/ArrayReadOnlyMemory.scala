@@ -16,13 +16,19 @@
  */
 package info.osdevelopment.sysemu.memory
 
+import scala.util.Try
+
 /**
   * A read-only memory backed by an array.
+ *
   * @param data the data for the read-only memory.
   */
 class ArrayReadOnlyMemory (val data: Array[Byte]) extends ReadOnlyMemory {
 
-  /** Return the size of the memory. */
+  /**
+    * Returns the size of the memory.
+    * @return the size of the memory
+    */
   override def size: Long = data.length
 
   /**
@@ -30,8 +36,8 @@ class ArrayReadOnlyMemory (val data: Array[Byte]) extends ReadOnlyMemory {
     * @param address the address that should be read
     * @return the byte read at the given address
     */
-  override protected def doRead(address: Long): Byte = {
-    data(address.asInstanceOf[Int])
+  override protected def doRead(address: Long): Try[Byte] = {
+    Try(data(address.asInstanceOf[Int]))
   }
 
 }

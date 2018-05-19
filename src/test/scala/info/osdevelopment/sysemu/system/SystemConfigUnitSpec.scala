@@ -17,8 +17,7 @@
 package info.osdevelopment.sysemu.system
 
 import info.osdevelopment.sysemu.memory.ReadWriteMemory
-import info.osdevelopment.sysemu.processor.test.TestProcessor
-import info.osdevelopment.sysemu.processor.{IllegalMemoryLayoutException, Processor}
+import info.osdevelopment.sysemu.processor.IllegalMemoryLayoutException
 import info.osdevelopment.sysemu.support.Utilities._
 import java.io.File
 import org.specs2._
@@ -37,7 +36,7 @@ class SystemConfigUnitSpec extends mutable.Specification {
     "when loading a HOCON file" >> {
       "should read the CPU" >> {
         val systemConfig = new SystemConfig(Some(new File("src/test/resources/config/unknown-system.conf")))
-        systemConfig.cpu must_== Some("68000")
+        systemConfig.cpu must beSome("68000")
       }
       "should read the CPU count" >> {
         val systemConfig = new SystemConfig(Some(new File("src/test/resources/config/unknown-system.conf")))
@@ -47,7 +46,7 @@ class SystemConfigUnitSpec extends mutable.Specification {
     "when loading an empty HOCON file" >> {
       "should return the default CPU" >> {
         val systemConfig = new SystemConfig(Some(new File("src/test/resources/config/empty-system.conf")))
-        systemConfig.cpu must_== Some("8086")
+        systemConfig.cpu must beSome("8086")
       }
       "should read the CPU count" >> {
         val systemConfig = new SystemConfig(Some(new File("src/test/resources/config/empty-system.conf")))
@@ -72,7 +71,7 @@ class SystemConfigUnitSpec extends mutable.Specification {
       "should have the CPU set" >> {
         val systemConfig = new SystemConfig()
         systemConfig.cpu = "Z8"
-        systemConfig.cpu must_== Some("Z8")
+        systemConfig.cpu must beSome("Z8")
       }
       "should have no CPU when set to null" >> {
         val systemConfig = new SystemConfig()
@@ -94,36 +93,44 @@ class SystemConfigUnitSpec extends mutable.Specification {
       "should accept one memory" >> {
         val config = new SystemConfig
         val memory = ReadWriteMemory(512.Ki)
-        config.addMemory(0x00000, memory)
+        memory must beSuccessfulTry
+        config.addMemory(0x00000, memory.get)
         success
       }
       "should accept two non-overlapping memories" >> {
         val config = new SystemConfig
         val memory1 = ReadWriteMemory(512.Ki)
+        memory1 must beSuccessfulTry
         val memory2 = ReadWriteMemory(512.Ki)
-        config.addMemory(0x00000, memory1)
-        config.addMemory(0x80000, memory2)
+        memory2 must beSuccessfulTry
+        config.addMemory(0x00000, memory1.get)
+        config.addMemory(0x80000, memory2.get)
         success
       }
       "should not accept two overlapping memories (higher added last)" >> {
         val config = new SystemConfig
         val memory1 = ReadWriteMemory(512.Ki)
+        memory1 must beSuccessfulTry
         val memory2 = ReadWriteMemory(512.Ki)
-        config.addMemory(0x00000, memory1)
-        config.addMemory(0x7ffff, memory2) must throwAn[IllegalMemoryLayoutException]
+        memory2 must beSuccessfulTry
+        config.addMemory(0x00000, memory1.get)
+        config.addMemory(0x7ffff, memory2.get) must throwAn[IllegalMemoryLayoutException]
       }
       "should not accept two overlapping memories (higher added first)" >> {
         val config = new SystemConfig
         val memory1 = ReadWriteMemory(512.Ki)
+        memory1 must beSuccessfulTry
         val memory2 = ReadWriteMemory(512.Ki)
-        config.addMemory(0x7ffff, memory2)
-        config.addMemory(0x00000, memory1) must throwAn[IllegalMemoryLayoutException]
+        memory2 must beSuccessfulTry
+        config.addMemory(0x7ffff, memory2.get)
+        config.addMemory(0x00000, memory1.get) must throwAn[IllegalMemoryLayoutException]
       }
       "should return an added memory" >> {
         val config = new SystemConfig
         val memory = ReadWriteMemory(512.Ki)
-        config.addMemory(0x00000, memory)
-        config.memory must havePair(0x00000, memory)
+        memory must beSuccessfulTry
+        config.addMemory(0x00000, memory.get)
+        config.memory must havePair(0x00000, memory.get)
       }
     }
   }

@@ -22,6 +22,9 @@ libraryDependencies += "org.specs2" %% "specs2-mock" % "4.2.0" % "test"
 coverageEnabled := true
 
 scalacOptions += "-feature"
+scalacOptions += "-deprecation"
+
+autoAPIMappings := true
 
 mappings in makeSite ++= Seq(
   file("LICENSE") -> "LICENSE",
