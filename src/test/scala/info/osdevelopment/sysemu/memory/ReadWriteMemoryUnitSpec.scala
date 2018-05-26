@@ -27,58 +27,80 @@ class ReadWriteMemoryUnitSpec extends mutable.Specification {
   "A ReadWriteMemory" >> {
     "when created" >> {
       "should have a default size of 1 GiB" >> {
-        val memory = ReadWriteMemory()
-        1.Gi must_== memory.size
+        val tryMemory = ReadWriteMemory()
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.size must_== 1.Gi
       }
       "should be configurable in size to smaller sizes" >> {
-        val memory = ReadWriteMemory(1.Mi)
-        1.Mi must_== memory.size
+        val tryMemory = ReadWriteMemory(1.Mi)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.size must_== 1.Mi
       }
       "should be configurable in size to larger sizes (with a multiple of 1.Gi)" >> {
-        val memory = ReadWriteMemory(2.Gi)
-        2.Gi must_== memory.size
+        val tryMemory = ReadWriteMemory(2.Gi)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.size must_== 2.Gi
       }
       "should be configurable in size to larger sizes (without a multiple of 1.Gi)" >> {
-        val memory = ReadWriteMemory(1536.Mi)
-        1536.Mi must_== memory.size
+        val tryMemory = ReadWriteMemory(1536.Mi)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.size must_== 1536.Mi
       }
-      "should throw an IllegalArgumentException when size is to large" >> {
-        ReadWriteMemory(2.Ei) must throwAn[IllegalArgumentException]
+      "should fail when size is to large" >> {
+        ReadWriteMemory(2.Ei) must beFailedTry.withThrowable[IllegalArgumentException]
       }
-      "should throw an IllegalArgumentException when size is negative" >> {
-        ReadWriteMemory(-2.Gi) must throwAn[IllegalArgumentException]
+      "should fail when size is negative" >> {
+        ReadWriteMemory(-2.Gi) must beFailedTry.withThrowable[IllegalArgumentException]
       }
     }
     "when accessed" >> {
       "return 0 if not initialized" >> {
-        val memory = ReadWriteMemory()
-        0 must_== memory.readByte(0)
+        val tryMemory = ReadWriteMemory()
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(0x0000) must beSuccessfulTry.withValue(0)
       }
       "return the byte value that was written into" >> {
-        val memory = ReadWriteMemory()
+        val tryMemory = ReadWriteMemory()
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
         memory.writeByte(1, 0xef.asInstanceOf[Byte])
-        0xef.asInstanceOf[Byte] must_== memory.readByte(1)
+        memory.readByte(0x0001) must beSuccessfulTry.withValue(0xef.asInstanceOf[Byte])
       }
       "return the byte value that was written into another module" >> {
-        val memory = ReadWriteMemory(2.Gi)
+        val tryMemory = ReadWriteMemory(2.Gi)
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
         memory.writeByte(0x0000000040000002L, 0xdf.asInstanceOf[Byte])
-        0xdf.asInstanceOf[Byte] must_== memory.readByte(0x0000000040000002L)
+        memory.readByte(0x0000000040000002L) must beSuccessfulTry.withValue(0xdf.asInstanceOf[Byte])
       }
-      "should throw an exception when the written address is negative" >> {
-        val memory = ReadWriteMemory()
-        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
+      "should fail when the written address is negative" >> {
+        val tryMemory = ReadWriteMemory()
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.writeByte(-1, 0xef.asInstanceOf[Byte]) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the written address is too large" >> {
-        val memory = ReadWriteMemory()
-        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must throwAn[IllegalAddressException]
+      "should fail when the written address is too large" >> {
+        val tryMemory = ReadWriteMemory()
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.writeByte(Int.MaxValue, 0xef.asInstanceOf[Byte]) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the read address is negative" >> {
-        val memory = ReadWriteMemory()
-        memory.readByte(-1) must throwAn[IllegalAddressException]
+      "should fail when the read address is negative" >> {
+        val tryMemory = ReadWriteMemory()
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(-1) must beFailedTry.withThrowable[IllegalAddressException]
       }
-      "should throw an exception when the read address is too large" >> {
-        val memory = ReadWriteMemory()
-        memory.readByte(Int.MaxValue) must throwAn[IllegalAddressException]
+      "should fail when the read address is too large" >> {
+        val tryMemory = ReadWriteMemory()
+        tryMemory must beSuccessfulTry
+        val memory = tryMemory.get
+        memory.readByte(Int.MaxValue) must beFailedTry.withThrowable[IllegalAddressException]
       }
     }
   }

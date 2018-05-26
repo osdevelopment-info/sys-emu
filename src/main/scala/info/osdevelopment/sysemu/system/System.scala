@@ -19,18 +19,39 @@ package info.osdevelopment.sysemu.system
 import java.util.UUID
 import org.slf4j.LoggerFactory
 
-class System(var uuid: Option[UUID]) {
+/**
+  * A system (emulated computer) with a given set of hardware.
+  *
+  * @param uuid the UUID of the system to be created
+  * @throws IllegalArgumentException if the given UUID is `null`
+  */
+@throws[IllegalArgumentException]
+class System(val uuid: UUID) {
 
+  /**
+    * Creates a new system with a random UUID.
+    * @return the created system
+    */
   def this() = {
-    this(None)
+    this(UUID.randomUUID)
   }
 
-  val log = LoggerFactory getLogger classOf[System]
+  if (uuid == null) {
+    throw new IllegalArgumentException("The UUID of a system may not be null.")
+  }
 
+  private val log = LoggerFactory getLogger classOf[System]
+
+  /**
+    * Executes a single step of the system (most likely of the processor).
+    */
   def step: Unit = {
     log.info("System step")
   }
 
+  /**
+    * Runs the system.
+    */
   def run: Unit = {
     log.info("System run")
   }

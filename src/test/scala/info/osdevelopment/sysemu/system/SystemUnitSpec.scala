@@ -16,20 +16,23 @@
  */
 package info.osdevelopment.sysemu.system
 
+import java.util.UUID
 import org.specs2._
 
 class SystemUnitSpec extends mutable.Specification with mock.Mockito {
 
   "A system should" >> {
-    "perform a single step" >> {
-      val system = mock[System]
-      system.step
-      there was one(system).step
+    "be possible to be created with a UUID" >> {
+      val uuid = UUID.randomUUID
+      val system = new System(uuid)
+      system.uuid must_== uuid
     }
-    "perform run" >> {
-      val system = mock[System]
-      system.run
-      there was one(system).run
+    "possible to be created without a UUID" >> {
+      val system = new System()
+      system.uuid must beAnInstanceOf[UUID]
+    }
+    "throw an exception when explicitly no UUID is given" >> {
+      new System(null) must throwAn[IllegalArgumentException]
     }
   }
 

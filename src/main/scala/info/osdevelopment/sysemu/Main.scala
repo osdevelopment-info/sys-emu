@@ -18,20 +18,16 @@ package info.osdevelopment.sysemu
 
 
 import akka.actor.{ActorSystem, Props}
-import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.Directives._
 import info.osdevelopment.sysemu.config.Configuration
 import info.osdevelopment.sysemu.memory.{Memory, ReadOnlyMemory}
 import info.osdevelopment.sysemu.processor.Processor
-import info.osdevelopment.sysemu.processor.x86.i86.Processor8086
 import info.osdevelopment.sysemu.remote.rest.RestDebugServer
-import info.osdevelopment.sysemu.support.Utilities._
 import info.osdevelopment.sysemu.system.{System, SystemConfig}
 import java.nio.file.{Files, Paths, StandardOpenOption}
-import org.apache.commons.cli.{CommandLine, DefaultParser, Option, Options}
-import scala.util.{Failure, Success, Try}
+import java.util.ServiceLoader
+import org.apache.commons.cli.{DefaultParser, Option, Options}
+import scala.collection.JavaConverters._
+import scala.util.{Success, Try}
 
 object Main {
 
@@ -50,8 +46,7 @@ class Main extends Configuration {
   def run(args: Array[String]): Unit = {
     val actorSystem = ActorSystem("emu-system", config)
     val system = new System
-    val httpRouter = actorSystem.actorOf(Props(classOf[RestDebugServer], actorSystem, this),
-      "restDebugService")
+    val httpRouter = actorSystem.actorOf(Props(classOf[RestDebugServer], actorSystem, this), "restDebugServer")
     httpRouter ! "start"
 
     /*val sysConfig = createConfigFromCommandLine(args)
@@ -63,72 +58,101 @@ class Main extends Configuration {
     }*/
   }
 
-  @throws[IllegalConfigurationException]
-  def createConfigFromCommandLine(args: Array[String]): Try[SystemConfig] = {
+  def createConfigFromCommandLine(args: Array[String]): scala.Option[SystemConfig] = {
     val options = new Options()
-    val biosOption = (Option builder("b") hasArg() longOpt("bios") optionalArg(true)
-      desc("A file that contains a BIOS image") build())
+
+    val restOption = (Option builder("r") longOpt("rest") optionalArg(true)
+      desc("Start the REST interface to control sys-emu from remote.") build())
+
+    val createOption = (Option builder("c") hasArg() longOpt("config") optionalArg(true)
+      desc("Create a system from a config file.") build())
+
+    val biosOption = (Option builder() hasArg() longOpt("bios") optionalArg(true)
+      desc("A file that contains a BIOS image. Only evaluated if also --cpu is given") build())
     options.addOption(biosOption)
 
-    val cpuOption = (Option builder("c") hasArg() longOpt("cpu") optionalArg(true)
-      desc("The CPU to emulate") build())
+    val cpuOption = (Option builder() hasArg() longOpt("cpu") optionalArg(true)
+      desc("The CPU to emulate, defaults to 8086.") build())
     options addOption(cpuOption)
 
     val parser = new DefaultParser
     val commandLine = parser parse(options, args)
 
-    val systemConfig = new SystemConfig
+    if (commandLine hasOption("cpu")) {
+      val systemConfig = new SystemConfig
 
-    val cpu = if (commandLine hasOption("c")) {
-      commandLine getOptionValue("c") match {
-        case "8086" => new Processor8086
-        case _ =>
-          return Failure(new IllegalConfigurationException("Invalid CPU"))
+      systemConfig.cpu = Some(commandLine getOptionValue ("cpu", "8086"))
+
+      val processorLoader: ServiceLoader[Processor] = ServiceLoader.load(classOf[Processor])
+      val processor = systemConfig.cpu match {
+        case Some(name) => processorLoader.asScala.find(_.name == name)
+        case _ => None
       }
-    } else {
-      new Processor8086
-    }
-    systemConfig.addProcessor(cpu)
 
-    val bios = if (commandLine hasOption("b")) {
-      readExternalBios(commandLine getOptionValue ("b"))
+      val bios = if (commandLine hasOption ("bios")) {
+        readExternalBios(commandLine getOptionValue ("bios"))
+      } else {
+        readDefaultBios(processor)
+      }
+      processor match {
+        case Some(proc) =>
+          bios match {
+            case Some(rom) =>
+              proc.calculateRomStart(rom.size) match {
+                case Some(address) =>
+                  systemConfig.addMemory(address, rom)
+                case None =>
+              }
+            case None =>
+          }
+        case None =>
+      }
+      Some(systemConfig)
     } else {
-      readDefaultBios(cpu)
+      None
     }
-    if (bios.isEmpty) {
-      return Failure(new IllegalConfigurationException("BIOS file does not exist"))
-    }
-    val biosSize = bios.get.size
-    val biosStart = if (cpu.maxMemory < 4.Gi) {
-      cpu.maxMemory - biosSize
-    } else {
-      4.Gi - biosSize
-    }
-    systemConfig.addMemory(biosStart, bios.get)
-    Success(systemConfig)
   }
 
   private def readExternalBios(fileName: String): scala.Option[Memory] = {
     val biosFile = Paths.get(fileName)
-    if (!Files.exists(biosFile)) {
-      None
+    if (Files.exists(biosFile)) {
+      val rom = ReadOnlyMemory(Files.newByteChannel(biosFile, StandardOpenOption.READ))
+      if (rom.isSuccess) {
+        Some(rom.get)
+      } else {
+        None
+      }
     } else {
-      Some(ReadOnlyMemory(Files.newByteChannel(biosFile, StandardOpenOption.READ)))
+      None
     }
   }
 
-  private def readDefaultBios(processor: Processor): scala.Option[Memory] = {
-    processor match {
-      case p: Processor8086 =>
-        val is = getClass.getResourceAsStream("bios86")
-        val rom = new Array[Byte](is.available())
-        is.read(rom)
-        Some(ReadOnlyMemory(rom))
-      case _ =>
-        val is = getClass.getResourceAsStream("bios86")
-        val rom = new Array[Byte](is.available())
-        is.read(rom)
-        Some(ReadOnlyMemory(rom))
+  private def readDefaultBios(processor: scala.Option[Processor]): scala.Option[Memory] = {
+    val is = processor match {
+      case Some(proc) => Try(proc.getClass.getResourceAsStream(proc.romName))
+      case _ => return None
+    }
+    val romSize = is match {
+      case Success(is) => Try(is.available)
+      case _ => return None
+    }
+    val bios = romSize match {
+      case Success(size) => Some(new Array[Byte](size))
+      case _ => return None
+    }
+    val read = bios match {
+      case Some(b) => Try(is.get.read(b))
+      case _ => return None
+    }
+    read match {
+      case Success(_) =>
+        val rom = ReadOnlyMemory(bios.get)
+        if (rom.isSuccess) {
+          Some(rom.get)
+        } else {
+          None
+        }
+      case _ => None
     }
   }
 

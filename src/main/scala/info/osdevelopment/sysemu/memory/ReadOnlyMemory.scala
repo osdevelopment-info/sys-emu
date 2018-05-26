@@ -17,40 +17,64 @@
 package info.osdevelopment.sysemu.memory
 
 import java.nio.channels.SeekableByteChannel
+import scala.util.{Failure, Success, Try}
 
+/**
+  * Companion object used to create a new read-only memory.
+  */
 object ReadOnlyMemory {
 
-  def apply(data: Array[Byte]): ReadOnlyMemory = {
-    new ArrayReadOnlyMemory(data)
+  /**
+    * Create a read-only memory that is backed by a [[scala.Byte Byte]] array.
+    * @param data the data of the read-only memory
+    * @return a [[Memory]]
+    */
+  def apply(data: Array[Byte]): Try[ReadOnlyMemory] = {
+    Try(new ArrayReadOnlyMemory(data))
   }
 
-  def apply(data: SeekableByteChannel): ReadOnlyMemory = {
-    new ChannelReadOnlyMemory(data)
+  /**
+    * Create a read-only memory that is backed by a `SeekableByteChannel`.
+    * @param data the data of the read-only memory
+    * @return a [[Memory]]
+    */
+  def apply(data: SeekableByteChannel): Try[ReadOnlyMemory] = {
+    Try(new ChannelReadOnlyMemory(data))
   }
 
 }
 
+/**
+  * An abstract class to emulate a read-only memory. Subclasses can implement different possibilities to read the
+  * content.
+  */
 abstract class ReadOnlyMemory protected() extends Memory {
 
   /**
     * Read a single byte from the memory at the given address.
-    *
-    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    * @return a `Success` with the byte read, `Failure` otherwise
     */
-  override final def readByte(address: Long): Byte = {
-    if (address < 0 | address >= size) throw new IllegalAddressException("Address outside memory")
-    doRead(address)
+  override final def readByte(address: Long): Try[Byte] = {
+    if (address < 0 | address >= size) Failure(new IllegalAddressException("Address outside memory"))
+    else doRead(address)
   }
 
-  protected def doRead(address: Long): Byte
+  /**
+    * The read method to be implemented by a subclass.
+    * @param address the address to read
+    * @return a `Success` with the byte read at the given address, `Failure` otherwise
+    */
+  protected def doRead(address: Long): Try[Byte]
 
   /**
     * Write a single byte to the memory at the given address.
-    *
-    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    * @param address the address to write
+    * @param value the value to write
+    * @return a `Failure` when the address is outside the area of the memory
     */
-  override final def writeByte(address: Long, value: Byte): Unit = {
-    if (address < 0 | address >= size) throw new IllegalAddressException("Address outside memory")
+  override final def writeByte(address: Long, value: Byte): Try[Unit] = {
+    if (address < 0 | address >= size) Failure(new IllegalAddressException("Address outside memory"))
+    else Success((): Unit)
   }
 
 }

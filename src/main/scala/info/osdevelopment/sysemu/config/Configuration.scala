@@ -24,10 +24,19 @@ import scala.util.Try
   */
 trait Configuration {
 
+  /**
+    * The config read from the file.
+    */
   val config = ConfigFactory.load
 
+  /**
+    * The service host read from the config file. By default `localhost` is used.
+    */
   lazy val serviceHost = Try(config.getString("service.host")).getOrElse("localhost")
 
+  /**
+    * The service port read from the config file. By default `8080` is used.
+    */
   lazy val servicePort = Try(config.getInt("service.port")).getOrElse(8080)
 
 }

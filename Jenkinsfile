@@ -20,8 +20,24 @@ pipeline {
             steps {
                 sh "${sbt} clean"
                 sh "${sbt} compile"
+            }
+        }
+        stage('Test') {
+            steps {
                 sh "${sbt} test coverageReport"
-                sh "${sbt} package"
+            }
+        }
+        stage('Publish Reports') {
+            steps {
+                junit 'target/test-reports/*.xml'
+                step([$class: 'ScoveragePublisher',
+                    reportDir: 'target/scala-2.12/scoverage-report',
+                    reportFile: 'scoverage.xml'])
+            }
+        }
+        stage('Create Artifacts') {
+            steps {
+                sh "${sbt} assembly"
             }
         }
         stage('Archive Artifacts') {

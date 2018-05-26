@@ -19,9 +19,13 @@ package info.osdevelopment.sysemu.system
 import java.util.UUID
 import scala.collection.mutable
 
+/**
+  * A registry with all known systems.
+  */
 object Systems {
 
-  val systemMap = mutable.Map[UUID, Option[System]]()
+  /** All known systems. */
+  private val systemMap = mutable.Map[UUID, Option[System]]()
 
   /**
     * Adds the given unknown system to the list of known systems. Returns true if the system has been added
@@ -32,15 +36,11 @@ object Systems {
   def add(system: Option[System]): Boolean = {
     system match {
       case Some(sys) =>
-        sys.uuid match {
-          case Some(uuid) =>
-            if (systemMap contains uuid) {
-              false
-            } else {
-              systemMap += (uuid -> system)
-              true
-            }
-          case _ => false
+        if (systemMap contains sys.uuid) {
+          false
+        } else {
+          systemMap += (sys.uuid -> system)
+          true
         }
       case _ => false
     }
@@ -61,10 +61,19 @@ object Systems {
     }
   }
 
+  /**
+    * Returns the system with the given UUID.
+    * @param uuid the UUID of the system to return
+    * @return Some(System) if a system with the given UUID exists or None
+    */
   def byUUID(uuid: UUID): Option[System] = {
     systemMap.getOrElse(uuid, None)
   }
 
+  /**
+    * Returns an Iterable with all known systems.
+    * @return all known systems
+    */
   def all(): Iterable[System] = {
     systemMap.values.flatten(s => s)
   }

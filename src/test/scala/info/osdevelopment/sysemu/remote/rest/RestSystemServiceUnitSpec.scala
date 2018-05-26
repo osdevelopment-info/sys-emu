@@ -23,12 +23,11 @@ import org.specs2.mutable
 class RestSystemServiceUnitSpec extends mutable.Specification with Specs2RouteTest {
 
   "A RestDebugService" >> {
-    "with a GET on /" >> {
+    "with a GET on /v0.1" >> {
       "should return 200/OK" >> {
         val service = new RestSystemService
         Get() ~> service.route ~> check {
           status must_== StatusCodes.OK
-
         }
       }
       "should return content type 'application/json'" >> {

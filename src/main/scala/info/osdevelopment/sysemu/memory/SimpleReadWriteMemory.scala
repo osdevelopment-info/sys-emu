@@ -17,40 +17,53 @@
 package info.osdevelopment.sysemu.memory
 
 import info.osdevelopment.sysemu.support.Utilities._
+import scala.util.{Failure, Try}
 
 /**
-  * The object ReadWriteMemory used to create instances of the memory. The maximum memory that can be handled is 1 GiB.
+  * The object SimpleReadWriteMemory used to create instances of the memory. The maximum memory that can be handled is
+  * 1 GiB.
   */
 object SimpleReadWriteMemory {
 
-  def apply(size: Long): SimpleReadWriteMemory = {
-    if (size <= 0) {
-      throw new IllegalArgumentException("Size must be greater than 0")
-    }
-    if (size > 1.Gi) {
-      throw new IllegalArgumentException("Max size supported is 1 GiB")
-    }
-    new SimpleReadWriteMemory(size)
+  /**
+    * Creates a read-write memory with the given `size`.
+    * @param size the size of the memory
+    * @return a `Success` with the read-write memory with the given size
+    */
+  def apply(size: Long): Try[SimpleReadWriteMemory] = {
+    if (size <= 0 | size > 1.Gi) Failure(new IllegalArgumentException("Max size supported is 1 GiB"))
+    else Try(new SimpleReadWriteMemory(size))
   }
 
 }
 
 /**
-  * A read-write memory (aka RAM) with a default size of 8MiB. The maximum size is 2^30^ Bytes (1 GiB).
+  * A read-write memory (aka RAM) with the given `size`. The maximum size is 2^30^ Bytes (1 GiB). The memory is backed
+  * by an array.
   * @param size the size of the memory
   */
 class SimpleReadWriteMemory private(val size: Long) extends ReadWriteMemory {
 
+  /** The array to hold the memory data. */
   val memory = new Array[Byte](size.asInstanceOf[Int])
 
-  @throws(classOf[IllegalAddressException])
-  protected override def doRead(address: Long): Byte = {
-    memory(address.asInstanceOf[Int])
+  /**
+    * The read method to read the value from the array.
+    * @param address the address to read
+    * @return a `Success` with the byte read at the given address
+    */
+  protected override def doRead(address: Long): Try[Byte] = {
+    Try(memory(address.asInstanceOf[Int]))
   }
 
-  @throws(classOf[IllegalAddressException])
-  protected override def doWrite(address: Long, value: Byte): Unit = {
-    memory(address.asInstanceOf[Int]) = value
+  /**
+    * The write method to write the value to the array.
+    * @param address the address to write
+    * @param value the `value` to write
+    * @return a `Success` when the byte is written successfully, `Failure` otherwise
+    */
+  protected override def doWrite(address: Long, value: Byte): Try[Unit] = {
+    Try(memory(address.asInstanceOf[Int]) = value)
   }
 
 }

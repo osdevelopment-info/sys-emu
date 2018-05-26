@@ -6,6 +6,7 @@ version := "0.1.0-SNAPSHOT"
 
 scalaVersion := "2.12.6"
 
+libraryDependencies += "com.typesafe" % "config" % "1.3.3"
 libraryDependencies += "com.typesafe.akka" %% "akka-actor" % "2.5.12"
 libraryDependencies += "com.typesafe.akka" %% "akka-http" % "10.1.1"
 libraryDependencies += "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.1"
@@ -21,3 +22,14 @@ libraryDependencies += "org.specs2" %% "specs2-mock" % "4.2.0" % "test"
 coverageEnabled := true
 
 scalacOptions += "-feature"
+scalacOptions += "-deprecation"
+
+autoAPIMappings := true
+
+mappings in makeSite ++= Seq(
+  file("LICENSE") -> "LICENSE",
+)
+
+includeFilter in makeSite := ((includeFilter in makeSite).value || "*.md")
+
+enablePlugins(SiteScaladocPlugin)

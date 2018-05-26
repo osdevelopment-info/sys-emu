@@ -17,48 +17,62 @@
 package info.osdevelopment.sysemu.memory
 
 import info.osdevelopment.sysemu.support.Utilities._
+import scala.util.{Failure, Success, Try}
 
+/**
+  * The object CombinedReadWriteMemory used to create instances of the memory. The maximum memory that can be handled is
+  * 1 EiB.
+  */
 object CombinedReadWriteMemory {
 
-  def apply(size: Long): CombinedReadWriteMemory = {
-    if (size <= 0) {
-      throw new IllegalArgumentException("Size must be greater than 0")
-    }
-    if (size > 1.Ei) {
-      throw new IllegalArgumentException("Max size supported is 1 EiB")
-    }
-    new CombinedReadWriteMemory(size)
+  /**
+    * Creates a read-write memory with the given `size`.
+    * @param size the size of the memory
+    * @return a `Success` with the read-write memory with the given size or a `Failure`
+    */
+  def apply(size: Long): Try[CombinedReadWriteMemory] = {
+    if (size <= 0 | size > 1.Ei) Failure(new IllegalArgumentException("Max size supported is 1 EiB"))
+    else Try(new CombinedReadWriteMemory(size))
   }
 
 }
 
 /**
   * A read-write memory that can hold up to 2^60^ Bytes (1 EiB). Please note that the size is immediately allocated.
-  * @param size
+  * @param size the size of the read-write memory to create
   */
 class CombinedReadWriteMemory private(val size: Long) extends ReadWriteMemory {
 
-  val remaining = size % 1.Gi
-  val numberModules = (if (remaining == 0) size / 1.Gi else size / 1.Gi + 1).asInstanceOf[Int]
-  val modules = Array.fill(numberModules){ SimpleReadWriteMemory(1.Gi.asInstanceOf[Int]) }
+  /** The size of the last "memory module". */
+  private val remaining = size % 1.Gi
+  /** The number of modules needed to create the memory. */
+  private val numberModules = (if (remaining == 0) size / 1.Gi else size / 1.Gi + 1).asInstanceOf[Int]
+  /** The modules for the memory. */
+  private val modules = Array
+    .fill(numberModules){ SimpleReadWriteMemory(1.Gi.asInstanceOf[Int]) }
+    .collect{ case Success(m) => m}
+  if (modules.length != numberModules) {
+    throw new IllegalStateException("Cannot create ReadWriteMemory")
+  }
 
   /**
-    * Read a single byte from the memory at the given address.
-    *
-    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    * The read method to read the value from the array of arrays.
+    * @param address the address to read
+    * @return a `Success` with the byte read at the given address or a `Failure`
     */
-  protected override def doRead(address: Long): Byte = {
+  protected override def doRead(address: Long): Try[Byte] = {
     val module = address / 1.Gi
     val offset = address % 1.Gi
     modules(module.asInstanceOf[Int]).readByte(offset)
   }
 
   /**
-    * Write a single byte to the memory at the given address.
-    *
-    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    * The write method to write the value to the array.
+    * @param address the address to write
+    * @param value the `value` to write
+    * @return a `Success` if the write was successful, `Failure` otherwise
     */
-  protected override def doWrite(address: Long, value: Byte): Unit = {
+  protected override def doWrite(address: Long, value: Byte): Try[Unit] = {
     val module = address / 1.Gi
     val offset = address % 1.Gi
     modules(module.asInstanceOf[Int]).writeByte(offset.asInstanceOf[Int], value)

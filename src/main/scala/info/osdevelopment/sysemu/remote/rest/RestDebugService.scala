@@ -17,29 +17,32 @@
 package info.osdevelopment.sysemu.remote.rest
 
 import akka.actor.ActorRef
-import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
+import info.osdevelopment.sysemu.remote.json.SysEmuJsonProtocol
 import org.slf4j.LoggerFactory
 
-class RestDebugService(val server: ActorRef) {
+class RestDebugService(val server: ActorRef) extends SysEmuJsonProtocol {
 
   val log = LoggerFactory getLogger classOf[RestDebugService]
 
   val systemService = new RestSystemService
 
+  val processorService = new RestProcessorService
+
   def route = {
-    pathSingleSlash {
-      get {
-        complete(StatusCodes.OK)
-      }
-    } ~
-    pathPrefix("system") {
-      systemService.route
-    } ~
-    pathPrefix("shutdown") {
-      post {
-        server ! "shutdown"
-        complete(StatusCodes.OK)
+    pathPrefix("v0.1") {
+      pathPrefix("processors") {
+        processorService.route
+      } ~
+      pathPrefix("systems") {
+        systemService.route
+      } ~
+      pathPrefix("shutdown") {
+        post {
+          server ! "shutdown"
+          complete(StatusCodes.OK)
+        }
       }
     }
   }
