@@ -81,7 +81,7 @@ class Main extends Configuration {
     if (commandLine hasOption("cpu")) {
       val systemConfig = new SystemConfig
 
-      systemConfig.cpu = commandLine getOptionValue ("cpu")
+      systemConfig.cpu = Some(commandLine getOptionValue ("cpu", "8086"))
 
       val processorLoader: ServiceLoader[Processor] = ServiceLoader.load(classOf[Processor])
       val processor = systemConfig.cpu match {

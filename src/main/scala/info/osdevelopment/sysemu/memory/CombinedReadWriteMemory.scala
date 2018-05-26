@@ -28,8 +28,7 @@ object CombinedReadWriteMemory {
   /**
     * Creates a read-write memory with the given `size`.
     * @param size the size of the memory
-    * @return a read-write memory with the given size
-    * @throws IllegalArgumentException when the memory size is either negative or too large
+    * @return a `Success` with the read-write memory with the given size or a `Failure`
     */
   def apply(size: Long): Try[CombinedReadWriteMemory] = {
     if (size <= 0 | size > 1.Ei) Failure(new IllegalArgumentException("Max size supported is 1 EiB"))
@@ -40,7 +39,7 @@ object CombinedReadWriteMemory {
 
 /**
   * A read-write memory that can hold up to 2^60^ Bytes (1 EiB). Please note that the size is immediately allocated.
-  * @param size
+  * @param size the size of the read-write memory to create
   */
 class CombinedReadWriteMemory private(val size: Long) extends ReadWriteMemory {
 
@@ -59,7 +58,7 @@ class CombinedReadWriteMemory private(val size: Long) extends ReadWriteMemory {
   /**
     * The read method to read the value from the array of arrays.
     * @param address the address to read
-    * @return the byte read at the given address
+    * @return a `Success` with the byte read at the given address or a `Failure`
     */
   protected override def doRead(address: Long): Try[Byte] = {
     val module = address / 1.Gi
@@ -71,7 +70,7 @@ class CombinedReadWriteMemory private(val size: Long) extends ReadWriteMemory {
     * The write method to write the value to the array.
     * @param address the address to write
     * @param value the `value` to write
-    * @return `Some` if the write was successful, `None` otherwise
+    * @return a `Success` if the write was successful, `Failure` otherwise
     */
   protected override def doWrite(address: Long, value: Byte): Try[Unit] = {
     val module = address / 1.Gi

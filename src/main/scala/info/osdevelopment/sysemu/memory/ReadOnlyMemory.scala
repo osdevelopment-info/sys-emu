@@ -52,8 +52,7 @@ abstract class ReadOnlyMemory protected() extends Memory {
 
   /**
     * Read a single byte from the memory at the given address.
-    *
-    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    * @return a `Success` with the byte read, `Failure` otherwise
     */
   override final def readByte(address: Long): Try[Byte] = {
     if (address < 0 | address >= size) Failure(new IllegalAddressException("Address outside memory"))
@@ -63,7 +62,7 @@ abstract class ReadOnlyMemory protected() extends Memory {
   /**
     * The read method to be implemented by a subclass.
     * @param address the address to read
-    * @return the byte read at the given address
+    * @return a `Success` with the byte read at the given address, `Failure` otherwise
     */
   protected def doRead(address: Long): Try[Byte]
 
@@ -71,7 +70,7 @@ abstract class ReadOnlyMemory protected() extends Memory {
     * Write a single byte to the memory at the given address.
     * @param address the address to write
     * @param value the value to write
-    * @throws IllegalAddressException if the address is out of range (not between 0 and size() - 1)
+    * @return a `Failure` when the address is outside the area of the memory
     */
   override final def writeByte(address: Long, value: Byte): Try[Unit] = {
     if (address < 0 | address >= size) Failure(new IllegalAddressException("Address outside memory"))

@@ -49,8 +49,9 @@ class SystemConfig (val configFile: Option[File]) {
   }
 
   val parseOptions = ConfigParseOptions.defaults.setAllowMissing(false)
+
   /**
-    * The read configuration from the file.
+    * The configuration read from the file.
     */
   private val config: Option[Config] = {
     configFile match {
@@ -64,7 +65,7 @@ class SystemConfig (val configFile: Option[File]) {
   }
   config match {
     case Some(conf) =>
-      cpu = Try(conf.getString("system.cpu")).getOrElse("8086")
+      cpu = Some(Try(conf.getString("system.cpu")).getOrElse("8086"))
       cpuCount = Try(conf.getInt("system.cpuCount")).getOrElse(1)
     case None => None
   }
@@ -73,12 +74,8 @@ class SystemConfig (val configFile: Option[File]) {
     * Sets the CPU of the system.
     * @param cpu the CPU of the system.
     */
-  def cpu_=(cpu: String) = {
-    if (cpu == null) {
-      _cpu = None
-    } else {
-      _cpu = Some(cpu)
-    }
+  def cpu_=(cpu: Option[String]) = {
+    _cpu = cpu
   }
 
   /**

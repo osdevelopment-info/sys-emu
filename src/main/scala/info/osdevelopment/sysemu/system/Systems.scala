@@ -24,9 +24,7 @@ import scala.collection.mutable
   */
 object Systems {
 
-  /**
-    * All known systems.
-    */
+  /** All known systems. */
   private val systemMap = mutable.Map[UUID, Option[System]]()
 
   /**

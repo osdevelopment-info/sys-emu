@@ -34,7 +34,7 @@ class ArrayReadOnlyMemory (val data: Array[Byte]) extends ReadOnlyMemory {
   /**
     * The implementation of the read.
     * @param address the address that should be read
-    * @return the byte read at the given address
+    * @return a `Success` with the byte read at the given address or a `Failure`
     */
   override protected def doRead(address: Long): Try[Byte] = {
     Try(data(address.asInstanceOf[Int]))

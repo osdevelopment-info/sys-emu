@@ -30,31 +30,26 @@ trait Memory {
   def size: Long
 
   /**
-    * Read a single [[scala.Byte Byte]] from the memory at the given address.
+    * Read a single `Byte` from the memory at the given address.
     * @param address the `address` to read from
-    * @return the Byte read
-    * @throws IllegalAddressException when the address is not accessible
+    * @return a `Success` with the Byte read or a `Failure`
     */
-  @throws(classOf[IllegalAddressException])
   def readByte(address: Long): Try[Byte]
 
   /**
-    * Write a single [[scala.Byte Byte]] to the memory at the given address.
+    * Write a single `Byte` to the memory at the given address.
     * @param address the `address` to write to
     * @param value the `value` to write
-    * @throws IllegalAddressException when the address is outside the range of the memory
+    * @return a `Success` when the byte was written successfully or a `Failure` otherwise
     */
-  @throws(classOf[IllegalAddressException])
   def writeByte(address: Long, value: Byte): Try[Unit]
 
   /**
-    * Read a [[scala.Short Short]] from the memory at `address ... address + 1`. The value of `address` will be the
-    * least significant [[scala.Byte Byte]].
+    * Read a `Short` from the memory at `address ... address + 1`. The value of `address` will be the least significant
+    * `Byte`.
     * @param address the `address` to read from
-    * @return the [[scala.Short Short]] read
-    * @throws IllegalAddressException when the address is outside the range of the memory
+    * @return a `Success` with the `Short` read or a `Failure`
     */
-  @throws(classOf[IllegalAddressException])
   final def readShort(address: Long): Try[Short] = {
     val bytes = List.range(0, 2).map(offs => readByte(address + offs))
     val failures = bytes.filter(x => x.isFailure)
@@ -66,25 +61,21 @@ trait Memory {
   }
 
   /**
-    * Write a [[scala.Short Short]] to `address ... address + 1`. The least significant [[scala.Byte Byte]] will be
-    * written to `address`.
+    * Write a `Short` to `address ... address + 1`. The least significant `Byte` will be written to `address`.
     * @param address the `address` to write to
     * @param value the `value` to write
-    * @throws IllegalAddressException when the address is outside the range of the memory
+    * @return a `Success` when the short was written successfully or a `Failure` otherwise
     */
-  @throws(classOf[IllegalAddressException])
   final def writeShort(address: Long, value: Short): Try[Unit] = {
     writeDivided(address, value, 2)
   }
 
   /**
-    * Read an [[scala.Int Int]] from the memory at `address ... address + 3`. The value of `address` will be the least
-    * significant [[scala.Byte Byte]].
+    * Read an `Int` from the memory at `address ... address + 3`. The value of `address` will be the least significant
+    * `Byte`.
     * @param address the `address` to read from
-    * @return the [[scala.Int Int]] read
-    * @throws IllegalAddressException when the address is outside the range of the memory
+    * @return a `Success` with the `Int` read or a `Failure`
     */
-  @throws(classOf[IllegalAddressException])
   final def readInt(address: Long): Try[Int] = {
     val bytes = List.range(0, 4).map(offs => readByte(address + offs))
     val failures = bytes.filter(x => x.isFailure)
@@ -96,25 +87,21 @@ trait Memory {
   }
 
   /**
-    * Write an [[scala.Int Int]] at `address ... address + 3`. The least significant [[scala.Byte Byte]] will be written
-    * to `address`.
+    * Write an `Int` at `address ... address + 3`. The least significant `Byte` will be written to `address`.
     * @param address the `address` to write to
     * @param value the `value` to write
-    * @throws IllegalAddressException when the address is outside the range of the memory
+    * @return a `Success` when the int was written successfully or a `Failure` otherwise
     */
-  @throws(classOf[IllegalAddressException])
   final def writeInt(address: Long, value: Int): Try[Unit] = {
     writeDivided(address, value, 4)
   }
 
   /**
-    * Read a [[scala.Long Long]] from the memory at `address ... address + 7`. The value of `address` will be the least
-    * significant [[scala.Byte Byte]].
+    * Read a `Long` from the memory at `address ... address + 7`. The value of `address` will be the least significant
+    * `Byte`.
     * @param address the `address` to read from
-    * @return the [[scala.Long Long]] read
-    * @throws IllegalAddressException when the address is outside the range of the memory
+    * @return a `Success` with the `Long` read or a `Failure`
     */
-  @throws(classOf[IllegalAddressException])
   final def readLong(address: Long): Try[Long] = {
     val bytes = List.range(0, 8).map(offs => readByte(address + offs))
     val failures = bytes.filter(x => x.isFailure)
@@ -126,13 +113,11 @@ trait Memory {
   }
 
   /**
-    * Write a [[scala.Long Long]] at `address ... address + 7`. The least significant [[scala.Byte Byte]] will be
-    * written to `address`.
+    * Write a `Long` at `address ... address + 7`. The least significant `Byte` will be written to `address`.
     * @param address the `address` to write to
     * @param value the `value` to write
-    * @throws IllegalAddressException when the address is outside the range of the memory
+    * @return a `Success` when the long was written successfully or a `Failure` otherwise
     */
-  @throws(classOf[IllegalAddressException])
   final def writeLong(address: Long, value: Long): Try[Unit] = {
     writeDivided(address, value, 8)
   }
@@ -142,7 +127,7 @@ trait Memory {
     * @param address the start address of the write
     * @param value the value to write
     * @param numberBytes the number of bytes to write
-    * @return Success if no error occurred during the write
+    * @return a `Success` if no error occurred during the write, `Failure` otherwiese
     */
   private def writeDivided(address: Long, value: Long, numberBytes: Int): Try[Unit] = {
     val offsets = List.range(0, numberBytes)

@@ -32,7 +32,7 @@ class ChannelReadOnlyMemory(val data: SeekableByteChannel) extends ReadOnlyMemor
   private var cachedBlock = -1L
   /** The cache of the read-only memory. */
   private val romCache = ByteBuffer.allocate(256.Ki.asInstanceOf[Int])
-  /** The number of bytes read from the channel during the last cache. */
+  /** The number of bytes read from the channel during the last caching operation. */
   private var cachedBytes = -1
 
   /**
@@ -44,7 +44,7 @@ class ChannelReadOnlyMemory(val data: SeekableByteChannel) extends ReadOnlyMemor
   /**
     * The read method which caches a block of data and returns the value to be read from the cache.
     * @param address the address to read
-    * @return the byte read at the given address
+    * @return a `Success` with the byte read at the given address or a `Failure`
     */
   override protected def doRead(address: Long): Try[Byte] = {
     val block = address / 256.Ki

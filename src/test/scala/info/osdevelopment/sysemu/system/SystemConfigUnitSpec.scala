@@ -70,13 +70,13 @@ class SystemConfigUnitSpec extends mutable.Specification {
       }
       "should have the CPU set" >> {
         val systemConfig = new SystemConfig()
-        systemConfig.cpu = "Z8"
+        systemConfig.cpu = Some("Z8")
         systemConfig.cpu must beSome("Z8")
       }
       "should have no CPU when set to null" >> {
         val systemConfig = new SystemConfig()
-        systemConfig.cpu = "Z8"
-        systemConfig.cpu = null
+        systemConfig.cpu = Some("Z8")
+        systemConfig.cpu = None
         systemConfig.cpu must beNone
       }
       "should have 0 CPU count by default" >> {

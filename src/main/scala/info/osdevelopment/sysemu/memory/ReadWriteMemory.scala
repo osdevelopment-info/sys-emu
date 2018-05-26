@@ -27,7 +27,7 @@ object ReadWriteMemory {
 
   /**
     * Creates a default read-write memory with 1 GiB.
-    * @return a read-write memory with 1 GiB
+    * @return a `Success` with a read-write memory with 1 GiB or a `Failure`
     */
   def apply(): Try[ReadWriteMemory] = {
     apply(1.Gi)
@@ -36,10 +36,8 @@ object ReadWriteMemory {
   /**
     * Creates a read-write memory with the given `size`.
     * @param size the size of the memory
-    * @return the read-write memory with the given size
-    * @throws IllegalArgumentException when the size is either negative or too large
+    * @return a `Success` with the read-write memory with the given size or a `Failure`
     */
-  @throws[IllegalArgumentException]
   def apply(size: Long): Try[ReadWriteMemory] = {
     if (size <= 0 | size > 1.Ei) Failure(new IllegalArgumentException("Max size supported is 1 EiB"))
     else {
@@ -56,12 +54,10 @@ object ReadWriteMemory {
 abstract class ReadWriteMemory protected() extends Memory {
 
   /**
-    * Read a single byte from the memory at the given address.
+    * Read a single `Byte` from the memory at the given address.
     * @param address the `address` to read from
-    * @return the byte read.
-    * @throws IllegalAddressException when the address is outside the memory
+    * @return a `Success` with the byte read or a `Failure`
     */
-  @throws[IllegalAddressException]
   override final def readByte(address: Long): Try[Byte] = {
     if (address < 0 | address >= size) Failure(new IllegalAddressException("Address outside memory"))
     else doRead(address)
@@ -70,17 +66,16 @@ abstract class ReadWriteMemory protected() extends Memory {
   /**
     * The read method to be implemented by a subclass.
     * @param address the address to read
-    * @return the byte read at the given address
+    * @return a `Success` with the byte read at the given address or a `Failure`
     */
   protected def doRead(address: Long): Try[Byte]
 
   /**
-    * Write a single [[scala.Byte Byte]] to the memory at the given address.
+    * Write a single `Byte` to the memory at the given address.
     * @param address the `address` to write to
     * @param value the `value` to write
-    * @throws IllegalAddressException when the address is outside the range of the memory
+    * @return a `Success` when the byte is written or a `Failure`
     */
-  @throws[IllegalAddressException]
   override final def writeByte(address: Long, value: Byte): Try[Unit] = {
     if (address < 0 | address >= size) Failure(new IllegalAddressException("Address outside memory"))
     else doWrite(address, value)
@@ -90,6 +85,7 @@ abstract class ReadWriteMemory protected() extends Memory {
     * The write method to be implemented by a subclass.
     * @param address the address to write
     * @param value the `value` to write
+    * @return a `Success` when the byte is written or a `Failure`
     */
   protected def doWrite(address: Long, value: Byte): Try[Unit]
 

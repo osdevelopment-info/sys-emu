@@ -31,6 +31,9 @@ class SystemUnitSpec extends mutable.Specification with mock.Mockito {
       val system = new System()
       system.uuid must beAnInstanceOf[UUID]
     }
+    "throw an exception when explicitly no UUID is given" >> {
+      new System(null) must throwAn[IllegalArgumentException]
+    }
   }
 
 }
